@@ -37,7 +37,7 @@ public class ClientEventHandler {
             if (event.getController() instanceof HelicopterController) {
                 float percentDamage = 100 - module.getDamage();
                 if (percentDamage < 5) {
-                    ((CarController) event.getController()).setEngineStarted(false);
+                    ((HelicopterController) event.getController()).setEngineStarted(false);
                 }
             } else if (event.getController() instanceof CarController){
                 float percentDamage = 100 - module.getDamage();
