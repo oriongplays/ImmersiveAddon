@@ -8,8 +8,10 @@ import fr.dynamx.addons.immersive.common.items.ItemRepairKit;
 import fr.dynamx.addons.immersive.common.items.ItemTreuil;
 import fr.dynamx.addons.immersive.common.modules.DamageCarModule;
 import fr.dynamx.addons.immersive.common.modules.DamageModule;
+import fr.dynamx.common.items.DynamXItemRegistry;
 import fr.dynamx.api.entities.VehicleEntityProperties;
 import fr.dynamx.api.events.PhysicsEntityEvent;
+import fr.dynamx.addons.immersive.common.modules.WheelHealthModule;
 import fr.dynamx.api.events.PhysicsEvent;
 import fr.dynamx.api.events.VehicleEntityEvent;
 import fr.dynamx.api.physics.EnumBulletShapeType;
@@ -27,7 +29,9 @@ import fr.dynamx.utils.DynamXUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -42,6 +46,7 @@ public class ImmersiveEventHandler {
         BaseVehicleEntity<?> entity = event.getEntity();
         event.getModuleList().add(new DamageModule(entity));
         event.getModuleList().add(new DamageCarModule(entity));
+        event.getModuleList().add(new WheelHealthModule(entity));
     }
 
     @SubscribeEvent
@@ -155,20 +160,22 @@ public class ImmersiveEventHandler {
             event.setCanceled(true);
         }
 
-        if (event.getPart() instanceof PartWheel) {
-            if (item instanceof ItemRepairWheel) {
-
-                WheelsModule wheel = event.getEntity().getModuleByType(WheelsModule.class);
-                if (wheel != null) {
-                    WheelsPhysicsHandler wheelsPhysics = (WheelsPhysicsHandler) wheel.getPhysicsHandler();
-                    if (wheelsPhysics != null) {
-                        WheelPhysics w = wheelsPhysics.getWheelByPartIndex(event.getPart().getId());
-                        if(w.isFlattened()) {
-                            w.setFlattened(false);
-                            player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Roue réparée."));
-                            player.inventory.clearMatchingItems(item, -1, 1, null);
-                        }
+            if (event.getPart() instanceof PartWheel && item instanceof ItemRepairWheel) {
+            WheelsModule wheel = event.getEntity().getModuleByType(WheelsModule.class);
+            if (wheel != null) {
+                WheelsPhysicsHandler wheelsPhysics = (WheelsPhysicsHandler) wheel.getPhysicsHandler();
+                if (wheelsPhysics != null) {
+                    int id = event.getPart().getId();
+                    WheelPhysics w = wheelsPhysics.getWheelByPartIndex((byte) id);
+                    if(w.isFlattened()) {
+                        w.setFlattened(false);
                     }
+                    WheelHealthModule wheelHealth = event.getEntity().getModuleByType(WheelHealthModule.class);
+                    if(wheelHealth != null) {
+                        wheelHealth.repairWheel(id);
+                    }
+                    player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Roue réparée."));
+                    player.inventory.clearMatchingItems(item, -1, 1, null);
                 }
             }
         }
@@ -183,6 +190,37 @@ public class ImmersiveEventHandler {
             }
         }
 
+    }
+
+        @SubscribeEvent
+    public void onVehicleAttacked(PhysicsEntityEvent.Attacked event) {
+        if(!ImmersiveAddonConfig.enableCarDamage)
+            return;
+        if(!(event.getEntity() instanceof BaseVehicleEntity))
+            return;
+        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) event.getEntity();
+
+        if(event.getDamageSource().getTrueSource() instanceof EntityPlayer) {
+            EntityPlayer attacker = (EntityPlayer) event.getDamageSource().getTrueSource();
+            ItemStack stack = attacker.getHeldItemMainhand();
+            if(stack.getItem() == DynamXItemRegistry.ITEM_WRENCH)
+                return;
+        }
+
+        DamageSource source = event.getDamageSource();
+        boolean projectile = source.isProjectile() || source.getImmediateSource() instanceof com.modularwarfare.common.entity.EntityBullet;
+
+        DamageModule damageModule = vehicle.getModuleByType(DamageModule.class);
+        WheelHealthModule wheelModule = vehicle.getModuleByType(WheelHealthModule.class);
+        float amount = projectile ? ImmersiveAddonConfig.attackDamage : ImmersiveAddonConfig.meleeDamage;
+
+        if(damageModule != null) {
+            damageModule.addDamageInstant(amount);
+        }
+
+        if(projectile && wheelModule != null) {
+            wheelModule.damageRandomWheel(amount);
+        }
     }
 
     @SubscribeEvent
