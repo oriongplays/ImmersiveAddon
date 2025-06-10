@@ -31,7 +31,7 @@ public class ImmersiveAddonConfig {
         versionCarModule = configuration.getInt("VersionCarModule", "CarConfig", 3, 1, 3, "v1 : damage system with percentage and other vehicles, v2 : damage system with terrain, v3 : v1 and v2");
         division = configuration.getInt("Division", "CarConfig", 2, 1, 50, "The higher the number, the less damage the car will take.");
         repairKitValue = configuration.getInt("RepairKitValue", "CarConfig", 100, 1, 100, "The value of the repair kit in percentage. The higher the number, the more the car will be repaired.");
-        attackDamage = configuration.getInt("AttackDamage", "CarConfig", 2, 1, 100, "Damage applied to vehicles when hit by projectiles.");
+        attackDamage = configuration.getInt("AttackDamage", "CarConfig", 10, 1, 100, "Damage applied to vehicles when hit by projectiles.");
         meleeDamage = configuration.getInt("MeleeDamage", "CarConfig", 1, 1, 100, "Damage applied when the vehicle is hit by melee attacks.");
         configuration.save();
     }

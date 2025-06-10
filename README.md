@@ -8,6 +8,7 @@ This addon adds new features to DynamX :
 - Anti puncture
 - Hands on the steering wheel
 - x
+- Engine upgrades via `/immersiveaddon mec engine <player> <level>` command
 
 ### How to add modules:
 

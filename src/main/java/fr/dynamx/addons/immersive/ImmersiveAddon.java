@@ -5,9 +5,12 @@ import fr.dynamx.addons.immersive.client.HandAnimClientEventHandler;
 import fr.dynamx.addons.immersive.common.HandAnimationEventHandler;
 import fr.dynamx.addons.immersive.common.ImmersiveEventHandler;
 import fr.dynamx.addons.immersive.common.items.RegisterHandler;
+import fr.dynamx.addons.immersive.common.items.SoundRegister;
 import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
 import fr.dynamx.addons.immersive.proxy.CommonProxy;
+import fr.dynamx.addons.immersive.server.commands.CommandImmersiveAddon;
 import fr.dynamx.addons.immersive.server.commands.CommandShowNames;
+import fr.dynamx.addons.immersive.server.commands.CommandImmersiveAddon;
 import fr.dynamx.addons.immersive.utils.ModSyncedDataKeys;
 import fr.dynamx.addons.immersive.utils.Utils;
 import fr.dynamx.api.contentpack.DynamXAddon;
@@ -38,6 +41,7 @@ public class ImmersiveAddon {
     public void onPreInit(FMLPreInitializationEvent event) {
         proxy.preInit(event);
         MinecraftForge.EVENT_BUS.register(new RegisterHandler());
+        MinecraftForge.EVENT_BUS.register(new SoundRegister());
         if(Utils.isUsingMod("com.mrcrayfish.obfuscate.Obfuscate") || Loader.isModLoaded("obfuscate")) {
             MinecraftForge.EVENT_BUS.register(new HandAnimationEventHandler());
 
@@ -73,5 +77,6 @@ public class ImmersiveAddon {
     @Mod.EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandShowNames());
+        event.registerServerCommand(new CommandImmersiveAddon());
     }
 }

@@ -47,7 +47,7 @@ public class DamageModule implements IPhysicsModule<AbstractEntityPhysicsHandler
         this.setLastDamage(40);
     }
     
-    public void addDamageInstant(float dam) {
+ public void addDamageInstant(float dam) {
         this.damage.set(Math.min(100, getDamage() + dam));
         this.setLastDamage(0);
     }

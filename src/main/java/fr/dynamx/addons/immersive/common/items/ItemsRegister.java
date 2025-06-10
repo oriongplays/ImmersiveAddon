@@ -21,6 +21,7 @@ public class ItemsRegister{
     public static Item TREUIL;
     public static Item REPAIRKIT;
     public static Item REPAIRWHEEL;
+    public static Item PRIMER;
 
     public void init()
     {
@@ -28,6 +29,7 @@ public class ItemsRegister{
         TREUIL = new ItemTreuil("treuil");
         REPAIRKIT = new ItemRepairKit("repairkit");
         REPAIRWHEEL = new ItemRepairWheel("repairwheel");
+        PRIMER = new ItemPrimer("primer");
     }
 
 

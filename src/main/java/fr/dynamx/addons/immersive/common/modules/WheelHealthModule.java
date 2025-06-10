@@ -46,17 +46,29 @@ public class WheelHealthModule implements IPhysicsModule<AbstractEntityPhysicsHa
             return;
         arr[index] = Math.max(0, arr[index] - amount);
         if(arr[index] <= 0) {
-            WheelsModule wheelModule = entity.getModuleByType(WheelsModule.class);
-            if(wheelModule != null) {
-                WheelsPhysicsHandler handler = wheelModule.getPhysicsHandler();
-                if(handler != null) {
-                    WheelPhysics wp = handler.getWheelByPartIndex((byte) index);
-                    if(wp != null && !wp.isFlattened()) {
-                        wp.setFlattened(true);
-                    }
+            punctureWheel(index);
+        } else if(new Random().nextInt(10) == 0) {
+            punctureWheel(index);
+        }
+        wheelHealth.set(arr);
+    }
+
+    private void punctureWheel(int index) {
+        float[] arr = wheelHealth.get();
+        if(index < 0 || index >= arr.length)
+            return;
+        arr[index] = 0f;
+        WheelsModule wheelModule = entity.getModuleByType(WheelsModule.class);
+        if(wheelModule != null) {
+            WheelsPhysicsHandler handler = wheelModule.getPhysicsHandler();
+            if(handler != null) {
+                WheelPhysics wp = handler.getWheelByPartIndex((byte) index);
+                if(wp != null && !wp.isFlattened()) {
+                    wp.setFlattened(true);
                 }
             }
         }
+        wheelHealth.set(arr);
     }
 
     public void repairWheel(int index) {

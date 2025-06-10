@@ -1,0 +1,6 @@
+{
+  "spray": {
+    "category": "player",
+    "sounds": ["dynamx_immersive:spray"]
+  }
+}

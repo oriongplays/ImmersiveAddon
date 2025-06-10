@@ -6,6 +6,7 @@ import fr.dynamx.addons.immersive.ImmersiveAddonConfig;
 import fr.dynamx.addons.immersive.common.items.ItemRepairWheel;
 import fr.dynamx.addons.immersive.common.items.ItemRepairKit;
 import fr.dynamx.addons.immersive.common.items.ItemTreuil;
+import fr.dynamx.addons.immersive.common.items.ItemPrimer;
 import fr.dynamx.addons.immersive.common.modules.DamageCarModule;
 import fr.dynamx.addons.immersive.common.modules.DamageModule;
 import fr.dynamx.common.items.DynamXItemRegistry;
@@ -14,15 +15,18 @@ import fr.dynamx.api.events.PhysicsEntityEvent;
 import fr.dynamx.addons.immersive.common.modules.WheelHealthModule;
 import fr.dynamx.api.events.PhysicsEvent;
 import fr.dynamx.api.events.VehicleEntityEvent;
+import fr.dynamx.addons.basics.common.modules.BasicsAddonModule;
 import fr.dynamx.api.physics.EnumBulletShapeType;
 import fr.dynamx.common.contentpack.parts.PartWheel;
 import fr.dynamx.common.entities.BaseVehicleEntity;
 import fr.dynamx.common.entities.PropsEntity;
 import fr.dynamx.common.entities.modules.SeatsModule;
 import fr.dynamx.common.entities.modules.WheelsModule;
+import fr.dynamx.common.entities.modules.engines.CarEngineModule;
 import fr.dynamx.common.entities.modules.engines.HelicopterEngineModule;
 import fr.dynamx.common.entities.vehicles.CarEntity;
 import fr.dynamx.common.entities.vehicles.HelicopterEntity;
+import fr.dynamx.common.contentpack.type.vehicle.ModularVehicleInfo;
 import fr.dynamx.common.physics.entities.modules.WheelsPhysicsHandler;
 import fr.dynamx.common.physics.entities.parts.wheel.WheelPhysics;
 import fr.dynamx.utils.DynamXUtils;
@@ -33,10 +37,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.SoundCategory;
+import fr.dynamx.addons.immersive.common.items.SoundRegister;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import com.modularwarfare.api.WeaponHitEvent;
 
 @Mod.EventBusSubscriber(modid = ImmersiveAddon.ID)
 public class ImmersiveEventHandler {
@@ -47,8 +55,7 @@ public class ImmersiveEventHandler {
         event.getModuleList().add(new DamageModule(entity));
         event.getModuleList().add(new DamageCarModule(entity));
         event.getModuleList().add(new WheelHealthModule(entity));
-    }
-
+  }
     @SubscribeEvent
     public void onDynxCollide(PhysicsEvent.PhysicsCollision event) {
         if(ImmersiveAddonConfig.enableCarDamage) {
@@ -160,7 +167,7 @@ public class ImmersiveEventHandler {
             event.setCanceled(true);
         }
 
-            if (event.getPart() instanceof PartWheel && item instanceof ItemRepairWheel) {
+                if (event.getPart() instanceof PartWheel && item instanceof ItemRepairWheel) {
             WheelsModule wheel = event.getEntity().getModuleByType(WheelsModule.class);
             if (wheel != null) {
                 WheelsPhysicsHandler wheelsPhysics = (WheelsPhysicsHandler) wheel.getPhysicsHandler();
@@ -189,10 +196,20 @@ public class ImmersiveEventHandler {
                 event.setCanceled(true);
             }
         }
+ if(item instanceof ItemPrimer){
+            BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) event.getEntity();
+            int next = vehicle.getMetadata() + 1;
+            ModularVehicleInfo info = (ModularVehicleInfo) vehicle.getPackInfo();
+            if(next >= info.getMaxVariantId())
+                next = 0;
+            vehicle.setMetadata(next);
+            player.world.playSound(null, player.posX, player.posY, player.posZ, SoundRegister.SPRAY, SoundCategory.PLAYERS, 1.0f, 1.0f);
+            event.setCanceled(true);
+        }
 
     }
 
-        @SubscribeEvent
+    @SubscribeEvent
     public void onVehicleAttacked(PhysicsEntityEvent.Attacked event) {
         if(!ImmersiveAddonConfig.enableCarDamage)
             return;
@@ -208,7 +225,7 @@ public class ImmersiveEventHandler {
         }
 
         DamageSource source = event.getDamageSource();
-        boolean projectile = source.isProjectile() || source.getImmediateSource() instanceof com.modularwarfare.common.entity.EntityBullet;
+        boolean projectile = source.isProjectile() || isMWProjectile(source.getImmediateSource());
 
         DamageModule damageModule = vehicle.getModuleByType(DamageModule.class);
         WheelHealthModule wheelModule = vehicle.getModuleByType(WheelHealthModule.class);
@@ -233,5 +250,38 @@ public class ImmersiveEventHandler {
                 propsEntity.setDead();
             }
         }
+    }
+    
+    @SubscribeEvent
+    public void onEntityMount(EntityMountEvent event) {
+        if (!event.isDismounting()) {
+            return;
+        }
+
+        if (!(event.getEntityBeingMounted() instanceof BaseVehicleEntity)) {
+            return;
+        }
+
+        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) event.getEntityBeingMounted();
+        if (!vehicle.hasModuleOfType(BasicsAddonModule.class)) {
+            return;
+        }
+
+        BasicsAddonModule module = vehicle.getModuleByType(BasicsAddonModule.class);
+        if (module.isLocked()) {
+            event.setCanceled(true);
+        }
+    }
+    
+        private static boolean isMWProjectile(Object obj) {
+        return obj instanceof com.modularwarfare.common.entity.decals.EntityBulletHole
+                || obj instanceof com.modularwarfare.common.entity.EntityBullet
+                || obj instanceof com.modularwarfare.common.entity.EntityBulletClient
+                || obj instanceof com.modularwarfare.common.entity.EntityExplosiveProjectile
+                || obj instanceof com.modularwarfare.common.entity.grenades.EntityGrenade
+                || obj instanceof com.modularwarfare.common.entity.grenades.EntitySmokeGrenade
+                || obj instanceof com.modularwarfare.common.entity.decals.EntityShell
+                || obj instanceof com.modularwarfare.common.entity.decals.EntityDecal
+                || obj instanceof com.modularwarfare.common.entity.grenades.EntityStunGrenade;
     }
 }
