@@ -29,6 +29,7 @@ import fr.dynamx.common.entities.vehicles.HelicopterEntity;
 import fr.dynamx.common.contentpack.type.vehicle.ModularVehicleInfo;
 import fr.dynamx.common.physics.entities.modules.WheelsPhysicsHandler;
 import fr.dynamx.common.physics.entities.parts.wheel.WheelPhysics;
+import fr.dynamx.addons.immersive.common.modules.VehiclePropertiesModule;
 import fr.dynamx.utils.DynamXUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -55,6 +56,7 @@ public class ImmersiveEventHandler {
         event.getModuleList().add(new DamageModule(entity));
         event.getModuleList().add(new DamageCarModule(entity));
         event.getModuleList().add(new WheelHealthModule(entity));
+        event.getModuleList().add(new VehiclePropertiesModule(entity));
   }
     @SubscribeEvent
     public void onDynxCollide(PhysicsEvent.PhysicsCollision event) {

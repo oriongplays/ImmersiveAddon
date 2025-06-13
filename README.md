@@ -8,7 +8,7 @@ This addon adds new features to DynamX :
 - Anti puncture
 - Hands on the steering wheel
 - x
-- Engine upgrades via `/immersiveaddon mec engine <player> <level>` command
+- Engine upgrades via `/immersiveaddon engine <player> <level>` command
 
 ### How to add modules:
 
@@ -44,6 +44,19 @@ TowTruckInfo{
     VehicleAttachPoint: 0 0 0
 }
 ```
+
+#### PesoDeVeiculo
+
+Each vehicle stores its weight class in NBT using the `PesoDeVeiculo` tag. If
+none is present the addon assumes the `medio` type. Use the console command
+
+```
+/immersiveaddon mec vehicle peso <type> <player>
+```
+
+while looking at a vehicle within five blocks to change its mass for the
+specified player. The available `<type>` values are those defined in
+`assets/dynamx_immersive/level1.json`.
 
 ## Links
 

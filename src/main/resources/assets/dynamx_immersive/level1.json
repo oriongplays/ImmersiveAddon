@@ -1,0 +1,27 @@
+{
+  "muito_leve": {
+    "model": "",
+    "emptyMass": 500,
+    "dragCoefficient": 0.5
+  },
+  "leve": {
+    "model": "",
+    "emptyMass": 1000,
+    "dragCoefficient": 0.5
+  },
+  "medio": {
+    "model": "",
+    "emptyMass": 20000,
+    "dragCoefficient": 0.5
+  },
+  "pesado": {
+    "model": "",
+    "emptyMass": 3000,
+    "dragCoefficient": 0.5
+  },
+  "muito_pesado": {
+    "model": "",
+    "emptyMass": 40000,
+    "dragCoefficient": 0.5
+  }
+}

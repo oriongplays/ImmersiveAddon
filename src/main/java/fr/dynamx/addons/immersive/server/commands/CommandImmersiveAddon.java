@@ -3,6 +3,12 @@ package fr.dynamx.addons.immersive.server.commands;
 import fr.dynamx.addons.immersive.common.modules.DamageCarModule;
 import fr.dynamx.addons.immersive.common.modules.DamageModule;
 import fr.dynamx.addons.immersive.common.modules.EngineTuningModule;
+import fr.dynamx.addons.immersive.common.modules.VehiclePropertiesModule;
+import fr.dynamx.addons.immersive.common.helpers.VehicleLevelConfig;
+import fr.dynamx.common.DynamXContext;
+import fr.dynamx.common.contentpack.sync.MessagePacksHashs;
+import fr.dynamx.common.contentpack.sync.PackSyncHandler;
+import fr.dynamx.api.network.EnumPacketTarget;
 import fr.dynamx.api.physics.BulletShapeType;
 import fr.dynamx.api.physics.EnumBulletShapeType;
 import fr.dynamx.common.entities.BaseVehicleEntity;
@@ -17,6 +23,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 
+import java.util.Map;
 import java.util.function.Predicate;
 
 public class CommandImmersiveAddon extends CommandBase {
@@ -27,7 +34,7 @@ public class CommandImmersiveAddon extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/immersiveaddon repair <player> <value> | /immersiveaddon <player> lock|unlock | /immersiveaddon mec engine <player> <level>";
+        return "/immersiveaddon repair <player> <value> | /immersiveaddon <player> lock|unlock | /immersiveaddon mec engine <player> <level> | /immersiveaddon mec vehicle peso <type> <player>";
     }
 
     @Override
@@ -64,38 +71,42 @@ public class CommandImmersiveAddon extends CommandBase {
         }
 
         if("mec".equalsIgnoreCase(args[0])) {
-            if(args.length != 4 || !"engine".equalsIgnoreCase(args[1])) {
+            if(args.length >= 3 && "engine".equalsIgnoreCase(args[1])) {
+                if(args.length != 4) {
+                    throw new WrongUsageException(getUsage(sender));
+                }
+                String playerName = args[2];
+                EntityPlayerMP target = server.getPlayerList().getPlayerByUsername(playerName);
+                if(target == null) {
+                    throw new CommandException("Player not found");
+                }
+                int level;
+                try {
+                    level = Integer.parseInt(args[3]);
+                } catch (NumberFormatException e) {
+                    throw new CommandException("Invalid level");
+                }
+                if(level < 1 || level > 5) {
+                    throw new CommandException("Level must be between 1 and 5");
+                }
+                handleTuneEngine(target, level, sender);
+                return;
+            }
+                        if(args.length == 5 && "vehicle".equalsIgnoreCase(args[1]) && "peso".equalsIgnoreCase(args[2])) {
+                String type = args[3];
+                String playerName = args[4];
+                if(!VehicleLevelConfig.typeExists(type)) {
+                    throw new CommandException("Invalid type");
+                }
+                EntityPlayerMP target = server.getPlayerList().getPlayerByUsername(playerName);
+                if(target == null) {
+                    throw new CommandException("Player not found");
+                }
+                handleSetPeso(target, type, sender);
+                return;
+                }
                 throw new WrongUsageException(getUsage(sender));
-            }
-            String playerName = args[2];
-            EntityPlayerMP target = server.getPlayerList().getPlayerByUsername(playerName);
-            if(target == null) {
-                throw new CommandException("Player not found");
-            }
-            int level;
-            try {
-                level = Integer.parseInt(args[3]);
-            } catch (NumberFormatException e) {
-                throw new CommandException("Invalid level");
-            }
-            if(level < 1 || level > 5) {
-                throw new CommandException("Level must be between 1 and 5");
-            }
-            handleTuneEngine(target, level, sender);
-            return;
         }
-
-        String playerName = args[0];
-        String action = args[1].toLowerCase();
-        if(!action.equals("lock") && !action.equals("unlock")) {
-            throw new WrongUsageException(getUsage(sender));
-        }
-        EntityPlayerMP target = server.getPlayerList().getPlayerByUsername(playerName);
-        if(target == null) {
-            throw new CommandException("Player not found");
-        }
-        boolean lock = action.equals("lock");
-        handleLock(target, lock, sender);
     }
 
     private void handleRepair(EntityPlayerMP player, int value, ICommandSender sender) throws CommandException {
@@ -163,5 +174,26 @@ public class CommandImmersiveAddon extends CommandBase {
         }
         tuning.setTuningLevel(level);
         player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Engine tuned to level " + level));
+    }
+    
+    private void handleSetPeso(EntityPlayerMP player, String type, ICommandSender sender) throws CommandException {
+        Predicate<EnumBulletShapeType> pred = p -> !p.isPlayer();
+        PhysicsRaycastResult result = DynamXUtils.castRayFromEntity(player, 5f, pred);
+        if(result == null) {
+            throw new CommandException("No vehicle in sight");
+        }
+        BulletShapeType<?> shape = (BulletShapeType<?>) result.hitBody.getUserObject();
+        if(!shape.getType().isBulletEntity() || !(shape.getObjectIn() instanceof BaseVehicleEntity)) {
+            throw new CommandException("No vehicle in sight");
+        }
+        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) shape.getObjectIn();
+        VehiclePropertiesModule module = vehicle.getModuleByType(VehiclePropertiesModule.class);
+        if(module == null) {
+            throw new CommandException("Vehicle cannot be updated");
+        }
+        module.setWeightType(type);
+        // Resend the physics variables so clients apply the new mass immediately
+        vehicle.getSynchronizer().resyncEntity(player);
+        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Peso do veiculo alterado para " + type));
     }
 }

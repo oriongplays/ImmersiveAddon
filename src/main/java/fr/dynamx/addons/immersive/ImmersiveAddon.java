@@ -8,9 +8,10 @@ import fr.dynamx.addons.immersive.common.items.RegisterHandler;
 import fr.dynamx.addons.immersive.common.items.SoundRegister;
 import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
 import fr.dynamx.addons.immersive.proxy.CommonProxy;
-import fr.dynamx.addons.immersive.server.commands.CommandImmersiveAddon;
 import fr.dynamx.addons.immersive.server.commands.CommandShowNames;
 import fr.dynamx.addons.immersive.server.commands.CommandImmersiveAddon;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import fr.dynamx.addons.immersive.utils.ModSyncedDataKeys;
 import fr.dynamx.addons.immersive.utils.Utils;
 import fr.dynamx.api.contentpack.DynamXAddon;
@@ -27,6 +28,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 public class ImmersiveAddon {
     public static final String ID = "dynamx_immersive";
     public static final String NAME = "ImmersiveAddon";
+    public static final Logger LOGGER = LogManager.getLogger(NAME);
 
 
     @SidedProxy(modId = ID, clientSide = "fr.dynamx.addons.immersive.proxy.ClientProxy", serverSide = "fr.dynamx.addons.immersive.proxy.ServerProxy")
