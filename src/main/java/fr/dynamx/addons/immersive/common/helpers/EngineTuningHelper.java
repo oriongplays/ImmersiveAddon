@@ -121,7 +121,12 @@ public class EngineTuningHelper {
             }
         }
         if (box != null && !defaults.gears.isEmpty()) {
+                        int gearCount = box.getGearCount();
             for (int i = 0; i < defaults.gears.size(); i++) {
+                    if (i >= gearCount) {
+                    ImmersiveAddon.LOGGER.warn("Gear {} defined in config but gearbox supports only {} gears", i, gearCount);
+                    break;
+                }
                 EngineLevelConfig.Gear g = defaults.gears.get(i);
                 box.setGear(i, g.minSpeed, g.maxSpeed, g.minRPM, g.maxRPM);
             }
@@ -141,6 +146,31 @@ public class EngineTuningHelper {
             }
         }
     }
+    
+        /**
+     * Selects the desired gear on the provided engine's gearbox.
+     * The value is clamped to the available range and out of bounds
+     * requests are logged.
+     */
+    public static void selectGear(CarEngineModule module, int gear) {
+        if (module == null || module.getPhysicsHandler() == null)
+            return;
+
+        EnginePhysicsHandler handler = module.getPhysicsHandler();
+        GearBox box = handler.getGearBox();
+        if (box == null)
+            return;
+
+        int gearCount = box.getGearCount();
+        int clamped = Math.max(0, Math.min(gear, gearCount - 1));
+        if (gear != clamped) {
+            ImmersiveAddon.LOGGER.warn("Requested gear {} outside range [0, {}], clamping to {}", gear, gearCount - 1, clamped);
+        }
+
+        box.setActiveGearNum(clamped);
+        handler.syncActiveGear(clamped);
+    }
+
 
     /** Configuration values for a vehicle engine level. */
     public static class EngineLevelConfig {

@@ -106,7 +106,9 @@ public class EngineTuningModule implements IPhysicsModule<AbstractEntityPhysicsH
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        tuningLevel.set(tag.getInteger("engineLevel"));
+        int lvl = tag.getInteger("engineLevel");
+        lvl = Math.max(1, Math.min(lvl, 5));
+        tuningLevel.set(lvl);
         power.set(tag.getFloat("enginePower"));
         maxRPM.set(tag.getFloat("engineMaxRPM"));
         braking.set(tag.getFloat("engineBraking"));
