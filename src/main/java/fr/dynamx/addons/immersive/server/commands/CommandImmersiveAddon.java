@@ -5,6 +5,7 @@ import fr.dynamx.addons.immersive.common.modules.DamageModule;
 import fr.dynamx.addons.immersive.common.modules.EngineTuningModule;
 import fr.dynamx.addons.immersive.common.modules.VehiclePropertiesModule;
 import fr.dynamx.addons.immersive.common.helpers.VehicleLevelConfig;
+import fr.dynamx.addons.immersive.common.helpers.EngineTuningHelper;
 import fr.dynamx.common.DynamXContext;
 import fr.dynamx.common.contentpack.sync.MessagePacksHashs;
 import fr.dynamx.common.contentpack.sync.PackSyncHandler;
@@ -34,7 +35,7 @@ public class CommandImmersiveAddon extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/immersiveaddon repair <player> <value> | /immersiveaddon <player> lock|unlock | /immersiveaddon mec engine <player> <level> | /immersiveaddon mec vehicle peso <type> <player>";
+        return "/immersiveaddon repair <player> <value> | /immersiveaddon <player> lock|unlock | /immersiveaddon mec vehicle peso <type> <player> | /immersiveaddon mec vehicle engine <level> <player>";
     }
 
     @Override
@@ -71,28 +72,7 @@ public class CommandImmersiveAddon extends CommandBase {
         }
 
         if("mec".equalsIgnoreCase(args[0])) {
-            if(args.length >= 3 && "engine".equalsIgnoreCase(args[1])) {
-                if(args.length != 4) {
-                    throw new WrongUsageException(getUsage(sender));
-                }
-                String playerName = args[2];
-                EntityPlayerMP target = server.getPlayerList().getPlayerByUsername(playerName);
-                if(target == null) {
-                    throw new CommandException("Player not found");
-                }
-                int level;
-                try {
-                    level = Integer.parseInt(args[3]);
-                } catch (NumberFormatException e) {
-                    throw new CommandException("Invalid level");
-                }
-                if(level < 1 || level > 5) {
-                    throw new CommandException("Level must be between 1 and 5");
-                }
-                handleTuneEngine(target, level, sender);
-                return;
-            }
-                        if(args.length == 5 && "vehicle".equalsIgnoreCase(args[1]) && "peso".equalsIgnoreCase(args[2])) {
+                if(args.length == 5 && "vehicle".equalsIgnoreCase(args[1]) && "peso".equalsIgnoreCase(args[2])) {
                 String type = args[3];
                 String playerName = args[4];
                 if(!VehicleLevelConfig.typeExists(type)) {
@@ -105,8 +85,37 @@ public class CommandImmersiveAddon extends CommandBase {
                 handleSetPeso(target, type, sender);
                 return;
                 }
+                if(args.length == 5 && "vehicle".equalsIgnoreCase(args[1]) && "engine".equalsIgnoreCase(args[2])) {
+                int level;
+                try {
+                    level = Integer.parseInt(args[3]);
+                } catch (NumberFormatException e) {
+                    throw new CommandException("Invalid level");
+                }
+                if(!EngineTuningHelper.levelExists(level)) {
+                    throw new CommandException("Invalid level");
+                }
+                String playerName = args[4];
+                EntityPlayerMP target = server.getPlayerList().getPlayerByUsername(playerName);
+                if(target == null) {
+                    throw new CommandException("Player not found");
+                }
+                handleVehicleEngine(target, level, sender);
+                return;
+                            }
                 throw new WrongUsageException(getUsage(sender));
         }
+                String playerName = args[0];
+        String action = args[1].toLowerCase();
+        if(!action.equals("lock") && !action.equals("unlock")) {
+            throw new WrongUsageException(getUsage(sender));
+        }
+        EntityPlayerMP target = server.getPlayerList().getPlayerByUsername(playerName);
+        if(target == null) {
+            throw new CommandException("Player not found");
+        }
+        boolean lock = action.equals("lock");
+        handleLock(target, lock, sender);
     }
 
     private void handleRepair(EntityPlayerMP player, int value, ICommandSender sender) throws CommandException {
@@ -157,25 +166,6 @@ public class CommandImmersiveAddon extends CommandBase {
         player.sendMessage(new TextComponentString(TextFormatting.GREEN + (lock ? "Vehicle locked" : "Vehicle unlocked")));
     }
 
-    private void handleTuneEngine(EntityPlayerMP player, int level, ICommandSender sender) throws CommandException {
-        Predicate<EnumBulletShapeType> pred = p -> !p.isPlayer();
-        PhysicsRaycastResult result = DynamXUtils.castRayFromEntity(player, 5f, pred);
-        if(result == null) {
-            throw new CommandException("No vehicle in sight");
-        }
-        BulletShapeType<?> shape = (BulletShapeType<?>) result.hitBody.getUserObject();
-        if(!shape.getType().isBulletEntity() || !(shape.getObjectIn() instanceof BaseVehicleEntity)) {
-            throw new CommandException("No vehicle in sight");
-        }
-        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) shape.getObjectIn();
-        EngineTuningModule tuning = vehicle.getModuleByType(EngineTuningModule.class);
-        if(tuning == null) {
-            throw new CommandException("Vehicle cannot be tuned");
-        }
-        tuning.setTuningLevel(level);
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Engine tuned to level " + level));
-    }
-    
     private void handleSetPeso(EntityPlayerMP player, String type, ICommandSender sender) throws CommandException {
         Predicate<EnumBulletShapeType> pred = p -> !p.isPlayer();
         PhysicsRaycastResult result = DynamXUtils.castRayFromEntity(player, 5f, pred);
@@ -195,5 +185,25 @@ public class CommandImmersiveAddon extends CommandBase {
         // Resend the physics variables so clients apply the new mass immediately
         vehicle.getSynchronizer().resyncEntity(player);
         player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Peso do veiculo alterado para " + type));
+    }
+
+    private void handleVehicleEngine(EntityPlayerMP player, int level, ICommandSender sender) throws CommandException {
+        Predicate<EnumBulletShapeType> pred = p -> !p.isPlayer();
+        PhysicsRaycastResult result = DynamXUtils.castRayFromEntity(player, 5f, pred);
+        if(result == null) {
+            throw new CommandException("No vehicle in sight");
+        }
+        BulletShapeType<?> shape = (BulletShapeType<?>) result.hitBody.getUserObject();
+        if(!shape.getType().isBulletEntity() || !(shape.getObjectIn() instanceof BaseVehicleEntity)) {
+            throw new CommandException("No vehicle in sight");
+        }
+        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) shape.getObjectIn();
+        EngineTuningModule module = vehicle.getModuleByType(EngineTuningModule.class);
+        if(module == null) {
+            throw new CommandException("Vehicle cannot be tuned");
+        }
+        module.setTuningLevel(level);
+        vehicle.getSynchronizer().resyncEntity(player);
+        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Motor ajustado para nivel " + level));
     }
 }

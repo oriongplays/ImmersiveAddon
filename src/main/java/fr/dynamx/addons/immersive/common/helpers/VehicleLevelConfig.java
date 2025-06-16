@@ -17,7 +17,7 @@ public class VehicleLevelConfig {
     public float dragCoefficient = -1f;
 
     public static VehicleLevelConfig loadDefault(String type) {
-        try (InputStream in = VehicleLevelConfig.class.getResourceAsStream("/assets/dynamx_immersive/level1.json")) {
+        try (InputStream in = VehicleLevelConfig.class.getClassLoader().getResourceAsStream("assets/dynamx_immersive/level1.json")) {
             if (in == null) {
                 return new VehicleLevelConfig();
             }
@@ -34,7 +34,7 @@ public class VehicleLevelConfig {
     }
 
     public static boolean typeExists(String type) {
-        try (InputStream in = VehicleLevelConfig.class.getResourceAsStream("/assets/dynamx_immersive/level1.json")) {
+        try (InputStream in = VehicleLevelConfig.class.getClassLoader().getResourceAsStream("assets/dynamx_immersive/level1.json")) {
             if (in == null) {
                 return false;
             }

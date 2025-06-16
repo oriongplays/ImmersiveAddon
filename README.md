@@ -8,7 +8,7 @@ This addon adds new features to DynamX :
 - Anti puncture
 - Hands on the steering wheel
 - x
-- Engine upgrades via `/immersiveaddon engine <player> <level>` command
+ - Engine upgrades via `/immersiveaddon mec vehicle engine <level> <player>` command
 
 ### How to add modules:
 
@@ -57,6 +57,28 @@ none is present the addon assumes the `medio` type. Use the console command
 while looking at a vehicle within five blocks to change its mass for the
 specified player. The available `<type>` values are those defined in
 `assets/dynamx_immersive/level1.json`.
+The command forces a resynchronization so the vehicle instantly updates for
+that player. Defaults are always loaded server‑side and sent to the client,
+so editing your local `level1.json` will not affect vehicle mass.
+Weight changes are now applied on both the server and the client.
+
+#### Engine Tuning
+
+You can also upgrade a vehicle's engine using the console command
+
+```
+/immersiveaddon mec vehicle engine <level> <player>
+```
+
+Again, aim at the vehicle within five blocks. Levels range from `1` to `5` and
+correspond to the values stored in `assets/dynamx_immersive/engine_levels.json`.
+The file follows the engine's original `.dynx` syntax with sections like
+`Power`, `MaxRPM`, `Braking`, `Point_N`, and `Gear_N`. The parameters are
+enforced server‑side and synchronized to the client immediately, so editing your
+local copy won't change anything. Every vehicle spawns with engine level `1`,
+ignoring the engine data from its pack. The command also forces a
+resynchronization so clients apply the new values right away.
+
 
 ## Links
 
