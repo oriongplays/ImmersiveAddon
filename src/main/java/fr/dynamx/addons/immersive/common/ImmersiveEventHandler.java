@@ -33,6 +33,7 @@ import fr.dynamx.addons.immersive.common.modules.VehiclePropertiesModule;
 import fr.dynamx.addons.immersive.common.modules.EngineTuningModule;
 import fr.dynamx.utils.DynamXUtils;
 import net.minecraft.entity.Entity;
+import fr.dynamx.addons.immersive.common.modules.WheelPropertiesModule;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -58,6 +59,7 @@ public class ImmersiveEventHandler {
         event.getModuleList().add(new DamageCarModule(entity));
         event.getModuleList().add(new WheelHealthModule(entity));
         event.getModuleList().add(new VehiclePropertiesModule(entity));
+        event.getModuleList().add(new WheelPropertiesModule(entity));
         event.getModuleList().add(new EngineTuningModule(entity));
   }
     @SubscribeEvent

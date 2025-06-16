@@ -4,6 +4,9 @@ import fr.dynamx.addons.immersive.common.modules.DamageCarModule;
 import fr.dynamx.addons.immersive.common.modules.DamageModule;
 import fr.dynamx.addons.immersive.common.modules.EngineTuningModule;
 import fr.dynamx.addons.immersive.common.modules.VehiclePropertiesModule;
+import fr.dynamx.addons.immersive.common.modules.WheelPropertiesModule;
+import fr.dynamx.addons.immersive.common.helpers.WheelTuningHelper;
+import fr.dynamx.common.contentpack.type.vehicle.ModularVehicleInfo;
 import fr.dynamx.addons.immersive.common.helpers.VehicleLevelConfig;
 import fr.dynamx.addons.immersive.common.helpers.EngineTuningHelper;
 import fr.dynamx.common.DynamXContext;
@@ -35,7 +38,7 @@ public class CommandImmersiveAddon extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/immersiveaddon repair <player> <value> | /immersiveaddon <player> lock|unlock | /immersiveaddon mec vehicle peso <type> <player> | /immersiveaddon mec vehicle engine <level> <player>";
+           return "/immersiveaddon repair <player> <value> | /immersiveaddon <player> lock|unlock | /immersiveaddon mec vehicle peso <type> <player> | /immersiveaddon mec vehicle engine <level> <player> | /immersiveaddon mec vehicle wheel <option> <value> <player>";
     }
 
     @Override
@@ -72,7 +75,12 @@ public class CommandImmersiveAddon extends CommandBase {
         }
 
         if("mec".equalsIgnoreCase(args[0])) {
-                if(args.length == 5 && "vehicle".equalsIgnoreCase(args[1]) && "peso".equalsIgnoreCase(args[2])) {
+            if(args.length < 4 || !"vehicle".equalsIgnoreCase(args[1])) {
+                throw new WrongUsageException(getUsage(sender));
+            }
+
+            String sub = args[2];
+            if("peso".equalsIgnoreCase(sub) && args.length == 5) {
                 String type = args[3];
                 String playerName = args[4];
                 if(!VehicleLevelConfig.typeExists(type)) {
@@ -84,8 +92,9 @@ public class CommandImmersiveAddon extends CommandBase {
                 }
                 handleSetPeso(target, type, sender);
                 return;
-                }
-                if(args.length == 5 && "vehicle".equalsIgnoreCase(args[1]) && "engine".equalsIgnoreCase(args[2])) {
+            }
+
+            if("engine".equalsIgnoreCase(sub) && args.length == 5) {
                 int level;
                 try {
                     level = Integer.parseInt(args[3]);
@@ -102,8 +111,49 @@ public class CommandImmersiveAddon extends CommandBase {
                 }
                 handleVehicleEngine(target, level, sender);
                 return;
-                            }
-                throw new WrongUsageException(getUsage(sender));
+            }
+
+            if("wheel".equalsIgnoreCase(sub)) {
+                if(args.length == 5) {
+                    String model = args[3];
+                    String playerName = args[4];
+                    EntityPlayerMP target = server.getPlayerList().getPlayerByUsername(playerName);
+                    if(target == null) {
+                        throw new CommandException("Player not found");
+                    }
+                    handleWheelModel(target, model, sender);
+                    return;
+                }
+                if(args.length == 6) {
+                    String option = args[3];
+                    String value = args[4];
+                    String playerName = args[5];
+                    EntityPlayerMP target = server.getPlayerList().getPlayerByUsername(playerName);
+                    if(target == null) {
+                        throw new CommandException("Player not found");
+                    }
+                    switch(option.toLowerCase()) {
+                        case "friction":
+                            handleWheelFriction(target, WheelTuningHelper.clampFriction(parseFloat(value)), sender);
+                            return;
+                        case "susrestlength":
+                            handleWheelRestLength(target, WheelTuningHelper.clampRest(parseFloat(value)), sender);
+                            return;
+                        case "susstiffness":
+                            handleWheelStiffness(target, WheelTuningHelper.clampStiff(parseFloat(value)), sender);
+                            return;
+                        case "skidparticle":
+                            if(!WheelTuningHelper.isValidParticle(value))
+                                throw new CommandException("Invalid particle");
+                            handleWheelParticle(target, value, sender);
+                            return;
+                        default:
+                            throw new WrongUsageException(getUsage(sender));
+                    }
+                }
+            }
+
+            throw new WrongUsageException(getUsage(sender));
         }
                 String playerName = args[0];
         String action = args[1].toLowerCase();
@@ -205,5 +255,81 @@ public class CommandImmersiveAddon extends CommandBase {
         module.setTuningLevel(level);
         vehicle.getSynchronizer().resyncEntity(player);
         player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Motor ajustado para nivel " + level));
+    }
+    private void handleWheelModel(EntityPlayerMP player, String model, ICommandSender sender) throws CommandException {
+        BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
+        WheelPropertiesModule module = vehicle.getModuleByType(WheelPropertiesModule.class);
+        if(module == null) {
+            throw new CommandException("Vehicle cannot be updated");
+        }
+        ModularVehicleInfo info = (ModularVehicleInfo) vehicle.getPackInfo();
+        module.setModel("obj/" + info.getPackName() + "/" + model + ".obj");
+        vehicle.getSynchronizer().resyncEntity(player);
+        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Wheel model updated"));
+    }
+
+    private void handleWheelFriction(EntityPlayerMP player, float value, ICommandSender sender) throws CommandException {
+        BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
+        WheelPropertiesModule module = vehicle.getModuleByType(WheelPropertiesModule.class);
+        if(module == null) {
+            throw new CommandException("Vehicle cannot be updated");
+        }
+        module.setFriction(value);
+        vehicle.getSynchronizer().resyncEntity(player);
+        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Wheel friction updated"));
+    }
+
+    private void handleWheelRestLength(EntityPlayerMP player, float value, ICommandSender sender) throws CommandException {
+        BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
+        WheelPropertiesModule module = vehicle.getModuleByType(WheelPropertiesModule.class);
+        if(module == null) {
+            throw new CommandException("Vehicle cannot be updated");
+        }
+        module.setRestLength(value);
+        vehicle.getSynchronizer().resyncEntity(player);
+        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Wheel rest length updated"));
+    }
+
+    private void handleWheelStiffness(EntityPlayerMP player, float value, ICommandSender sender) throws CommandException {
+        BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
+        WheelPropertiesModule module = vehicle.getModuleByType(WheelPropertiesModule.class);
+        if(module == null) {
+            throw new CommandException("Vehicle cannot be updated");
+        }
+        module.setStiffness(value);
+        vehicle.getSynchronizer().resyncEntity(player);
+        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Wheel stiffness updated"));
+    }
+
+    private void handleWheelParticle(EntityPlayerMP player, String particle, ICommandSender sender) throws CommandException {
+        BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
+        WheelPropertiesModule module = vehicle.getModuleByType(WheelPropertiesModule.class);
+        if(module == null) {
+            throw new CommandException("Vehicle cannot be updated");
+        }
+        module.setSkidParticle(particle);
+        vehicle.getSynchronizer().resyncEntity(player);
+        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Wheel particle updated"));
+    }
+
+    private BaseVehicleEntity<?> getTargetVehicle(EntityPlayerMP player) throws CommandException {
+        Predicate<EnumBulletShapeType> pred = p -> !p.isPlayer();
+        PhysicsRaycastResult result = DynamXUtils.castRayFromEntity(player, 5f, pred);
+        if(result == null) {
+            throw new CommandException("No vehicle in sight");
+        }
+        BulletShapeType<?> shape = (BulletShapeType<?>) result.hitBody.getUserObject();
+        if(!shape.getType().isBulletEntity() || !(shape.getObjectIn() instanceof BaseVehicleEntity)) {
+            throw new CommandException("No vehicle in sight");
+        }
+        return (BaseVehicleEntity<?>) shape.getObjectIn();
+    }
+
+    private float parseFloat(String value) throws CommandException {
+        try {
+            return Float.parseFloat(value);
+        } catch(NumberFormatException e) {
+            throw new CommandException("Invalid value");
+        }
     }
 }

@@ -79,6 +79,18 @@ local copy won't change anything. Every vehicle spawns with engine level `1`,
 ignoring the engine data from its pack. The command also forces a
 resynchronization so clients apply the new values right away.
 
+#### Wheel Tuning
+
+Wheels can also be customized using
+
+```
+/immersiveaddon mec vehicle wheel <model|friction|susRestLength|susStiffness|skidParticle> <value> <player>
+```
+
+Look at the vehicle within five blocks and specify the option to change.
+Allowed ranges and particles are defined in `assets/dynamx_immersive/wheel_config.json`.
+Values outside these limits are clamped server‑side and synchronized to the client immediately.
+
 
 ## Links
 
