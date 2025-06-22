@@ -19,8 +19,8 @@ public class WheelTuningHelper {
         public float frictionMax = 3f;
         public float brakeMin = 200f;
         public float brakeMax = 1000f;
-        public float restMin = 0.15f;
-        public float restMax = 0.22f;
+        public float restMin = 0.001f;
+        public float restMax = 1.00f;
         public float stiffMin = 30f;
         public float stiffMax = 60f;
         public String[] particles = new String[0];

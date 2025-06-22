@@ -3,8 +3,8 @@
   "frictionMax": 3.0,
   "brakeMin": 200,
   "brakeMax": 1000,
-  "restMin": 0.15,
-  "restMax": 0.22,
+  "restMin": 0.001,
+  "restMax": 1.0,
   "stiffMin": 30,
   "stiffMax": 60,
   "particles": [
