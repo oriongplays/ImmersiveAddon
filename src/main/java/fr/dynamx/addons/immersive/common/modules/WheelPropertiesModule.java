@@ -25,26 +25,32 @@ public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysi
     private final BaseVehicleEntity<?> entity;
 
     @SynchronizedEntityVariable(name = "wheelModel")
-    private final EntityVariable<String> model = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    private final EntityVariable<String> model = new EntityVariable<>((v, val) -> apply(),
+            SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
 
     @SynchronizedEntityVariable(name = "wheelFriction")
-    private final EntityVariable<Float> friction = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS,
+    private final EntityVariable<Float> friction = new EntityVariable<>((v, val) -> apply(),
+            SynchronizationRules.PHYSICS_TO_SPECTATORS,
             WheelTuningHelper.clampFriction(1.5f));
 
     @SynchronizedEntityVariable(name = "wheelBrake")
-    private final EntityVariable<Float> brakeForce = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS,
+    private final EntityVariable<Float> brakeForce = new EntityVariable<>((v, val) -> apply(),
+            SynchronizationRules.PHYSICS_TO_SPECTATORS,
             WheelTuningHelper.clampBrake(200f));
 
     @SynchronizedEntityVariable(name = "wheelRest")
-    private final EntityVariable<Float> restLength = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS,
+    private final EntityVariable<Float> restLength = new EntityVariable<>((v, val) -> apply(),
+            SynchronizationRules.PHYSICS_TO_SPECTATORS,
             WheelTuningHelper.clampRest(0.22f));
 
     @SynchronizedEntityVariable(name = "wheelStiff")
-    private final EntityVariable<Float> stiffness = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS,
+    private final EntityVariable<Float> stiffness = new EntityVariable<>((v, val) -> apply(),
+            SynchronizationRules.PHYSICS_TO_SPECTATORS,
             WheelTuningHelper.clampStiff(30f));
 
     @SynchronizedEntityVariable(name = "wheelParticle")
-    private final EntityVariable<String> skidParticle = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "spit");
+    private final EntityVariable<String> skidParticle = new EntityVariable<>((v, val) -> apply(),
+            SynchronizationRules.PHYSICS_TO_SPECTATORS, "spit");
 
     public WheelPropertiesModule(BaseVehicleEntity<?> entity) {
         this.entity = entity;
