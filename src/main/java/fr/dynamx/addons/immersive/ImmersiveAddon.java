@@ -4,6 +4,7 @@ import fr.dynamx.addons.immersive.client.ClientEventHandler;
 import fr.dynamx.addons.immersive.client.HandAnimClientEventHandler;
 import fr.dynamx.addons.immersive.common.HandAnimationEventHandler;
 import fr.dynamx.addons.immersive.common.ImmersiveEventHandler;
+import fr.dynamx.addons.immersive.common.GuiHandler;
 import fr.dynamx.addons.immersive.common.items.RegisterHandler;
 import fr.dynamx.addons.immersive.common.items.SoundRegister;
 import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
@@ -21,6 +22,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 @Mod(modid = ImmersiveAddon.ID, name = ImmersiveAddon.NAME, version = "1.0", dependencies = "before: dynamxmod")
@@ -29,6 +31,9 @@ public class ImmersiveAddon {
     public static final String ID = "dynamx_immersive";
     public static final String NAME = "ImmersiveAddon";
     public static final Logger LOGGER = LogManager.getLogger(NAME);
+
+    @Mod.Instance
+    public static ImmersiveAddon INSTANCE;
 
 
     @SidedProxy(modId = ID, clientSide = "fr.dynamx.addons.immersive.proxy.ClientProxy", serverSide = "fr.dynamx.addons.immersive.proxy.ServerProxy")
@@ -42,6 +47,7 @@ public class ImmersiveAddon {
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
         proxy.preInit(event);
+        ImmersiveAddonConfig.init(event.getSuggestedConfigurationFile());
         MinecraftForge.EVENT_BUS.register(new RegisterHandler());
         MinecraftForge.EVENT_BUS.register(new SoundRegister());
         if(Utils.isUsingMod("com.mrcrayfish.obfuscate.Obfuscate") || Loader.isModLoaded("obfuscate")) {
@@ -54,13 +60,11 @@ public class ImmersiveAddon {
 
         if (event.getSide().isClient()) {
             MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
-            //KeyBindings.register();
         }
 
         MinecraftForge.EVENT_BUS.register(new ImmersiveEventHandler());
-
-        ImmersiveAddonConfig.init(event.getSuggestedConfigurationFile());
         ImmersiveAddonPacketHandler.getInstance().registerPackets();
+        NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
 
         //network = NetworkRegistry.INSTANCE.newSimpleChannel(ImmersiveAddon.ID);
         //network.registerMessage(PacketAttachTrailer.Handler.class, PacketAttachTrailer.class, 0, Side.SERVER);

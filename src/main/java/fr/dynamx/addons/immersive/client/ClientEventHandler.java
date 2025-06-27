@@ -2,6 +2,12 @@ package fr.dynamx.addons.immersive.client;
 
 import fr.dynamx.addons.immersive.ImmersiveAddon;
 import fr.dynamx.addons.immersive.ImmersiveAddonConfig;
+import fr.dynamx.common.entities.BaseVehicleEntity;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import fr.dynamx.addons.immersive.client.KeyVehicleInventory;
+import fr.dynamx.addons.immersive.common.modules.VehicleCustomizationModule;
+import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
+import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleParts;
 import fr.dynamx.addons.immersive.common.modules.DamageModule;
 import fr.dynamx.api.events.VehicleEntityEvent;
 import fr.dynamx.client.handlers.hud.CarController;
@@ -28,6 +34,49 @@ public class ClientEventHandler {
     public static boolean showNames = false;
 
     private static long lastJump = 0;
+    
+        @SubscribeEvent
+    public void handleInventoryKey(TickEvent.ClientTickEvent event) {
+        if(event.phase != TickEvent.Phase.END)
+            return;
+        if(mc.player != null && KeyVehicleInventory.OPEN_INVENTORY != null && KeyVehicleInventory.OPEN_INVENTORY.isPressed()) {
+            if(mc.player.getRidingEntity() instanceof BaseVehicleEntity) {
+                BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) mc.player.getRidingEntity();
+                if(vehicle.hasModuleOfType(fr.dynamx.common.entities.modules.SeatsModule.class)) {
+                    fr.dynamx.common.entities.modules.SeatsModule seats = vehicle.getModuleByType(fr.dynamx.common.entities.modules.SeatsModule.class);
+                    if(seats.getControllingPassenger() == mc.player) {
+                        VehicleCustomizationModule module = vehicle.getModuleByType(VehicleCustomizationModule.class);
+                        if(module != null) {
+                            ImmersiveAddonPacketHandler.getInstance().getNetwork()
+                                    .sendToServer(new PacketOpenVehicleParts(vehicle.getEntityId()));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    @SubscribeEvent
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if(event.phase != TickEvent.Phase.END)
+            return;
+        if(mc.player != null && KeyVehicleInventory.OPEN_INVENTORY != null && KeyVehicleInventory.OPEN_INVENTORY.isPressed()) {
+            if(mc.player.getRidingEntity() instanceof BaseVehicleEntity) {
+                BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) mc.player.getRidingEntity();
+                if(vehicle.hasModuleOfType(fr.dynamx.common.entities.modules.SeatsModule.class)) {
+                    fr.dynamx.common.entities.modules.SeatsModule seats = vehicle.getModuleByType(fr.dynamx.common.entities.modules.SeatsModule.class);
+                    if(seats.getControllingPassenger() == mc.player) {
+                        VehicleCustomizationModule module = vehicle.getModuleByType(VehicleCustomizationModule.class);
+                        if(module != null) {
+                            mc.displayGuiScreen(new GuiVehicleParts(mc.player.inventory, vehicle, module));
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     @SubscribeEvent
     public void updateVehicleController(VehicleEntityEvent.ControllerUpdate event) {

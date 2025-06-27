@@ -22,6 +22,12 @@ public class ItemsRegister{
     public static Item REPAIRKIT;
     public static Item REPAIRWHEEL;
     public static Item PRIMER;
+    public static ItemVehiclePart FRONT_BUMPER;
+    public static ItemVehiclePart REAR_BUMPER;
+    public static ItemVehiclePart HOOD;
+    public static ItemVehiclePart SPOILER;
+    public static ItemVehiclePart ROOF;
+    public static ItemVehiclePart SIDE_SKIRT;
 
     public void init()
     {
@@ -30,6 +36,12 @@ public class ItemsRegister{
         REPAIRKIT = new ItemRepairKit("repairkit");
         REPAIRWHEEL = new ItemRepairWheel("repairwheel");
         PRIMER = new ItemPrimer("primer");
+        FRONT_BUMPER = new ItemVehiclePart("front_bumper", "front_bumper");
+        REAR_BUMPER = new ItemVehiclePart("rear_bumper", "rear_bumper");
+        HOOD = new ItemVehiclePart("hood", "hood");
+        SPOILER = new ItemVehiclePart("spoiler", "spoiler");
+        ROOF = new ItemVehiclePart("roof", "roof");
+        SIDE_SKIRT = new ItemVehiclePart("side_skirt", "side_skirt");
     }
 
 

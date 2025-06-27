@@ -1,6 +1,7 @@
 package fr.dynamx.addons.immersive.common.network;
 
 import fr.dynamx.addons.immersive.ImmersiveAddon;
+import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleParts;
 import fr.dynamx.addons.immersive.common.network.packets.PacketShowNames;
 import fr.dynamx.addons.immersive.common.network.packets.SendRadioFreqConfig;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -27,6 +28,7 @@ public class ImmersiveAddonPacketHandler {
 
         this.registerPacket(SendRadioFreqConfig.Handler.class, SendRadioFreqConfig.class, Side.CLIENT);
         this.registerPacket(PacketShowNames.Handler.class, PacketShowNames.class, Side.CLIENT);
+        this.registerPacket(PacketOpenVehicleParts.Handler.class, PacketOpenVehicleParts.class, Side.SERVER);
     }
     private <REQ extends IMessage, REPLY extends IMessage> void registerPacket(Class<? extends IMessageHandler<REQ, REPLY>> messageHandler, Class<REQ> requestMessageType, Side side) {
         network.registerMessage(messageHandler, requestMessageType, nextID, side);
