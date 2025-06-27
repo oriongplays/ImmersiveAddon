@@ -34,7 +34,7 @@ public class ImmersiveAddonConfig {
         repairKitValue = configuration.getInt("RepairKitValue", "CarConfig", 100, 1, 100, "The value of the repair kit in percentage. The higher the number, the more the car will be repaired.");
         attackDamage = configuration.getInt("AttackDamage", "CarConfig", 10, 1, 100, "Damage applied to vehicles when hit by projectiles.");
         meleeDamage = configuration.getInt("MeleeDamage", "CarConfig", 1, 1, 100, "Damage applied when the vehicle is hit by melee attacks.");
-        keyOpenParts = configuration.getInt("OpenPartsKey", "ClientGeneral", 67, 1, 255, "Key code to open vehicle customization inventory.");
+        keyOpenParts = configuration.getInt("OpenInventoryKey", "ClientGeneral", 67, 1, 255, "Key code to open vehicle inventory.");
         configuration.save();
     }
 }

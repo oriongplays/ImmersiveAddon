@@ -9,4 +9,5 @@ item.spoiler.name=Spoiler
 item.roof.name=Roof
 item.side_skirt.name=Side Skirt
 gui.vehicle_parts.title=Vehicle Parts
-key.vehicle_parts=Vehicle Parts Inventory
+gui.vehicle_storage.title=Vehicle Inventory
+key.vehicle_inventory=Vehicle Inventory

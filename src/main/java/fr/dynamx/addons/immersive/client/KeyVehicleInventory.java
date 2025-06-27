@@ -11,7 +11,7 @@ public class KeyVehicleInventory {
     public static KeyBinding OPEN_INVENTORY;
 
     public static void register() {
-        OPEN_INVENTORY = new KeyBinding("key.vehicle_parts", ImmersiveAddonConfig.keyOpenParts, "key.categories.gameplay");
+        OPEN_INVENTORY = new KeyBinding("key.vehicle_inventory", ImmersiveAddonConfig.keyOpenParts, "key.categories.gameplay");
         ClientRegistry.registerKeyBinding(OPEN_INVENTORY);
     }
 }

@@ -5,9 +5,9 @@ import fr.dynamx.addons.immersive.ImmersiveAddonConfig;
 import fr.dynamx.common.entities.BaseVehicleEntity;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import fr.dynamx.addons.immersive.client.KeyVehicleInventory;
-import fr.dynamx.addons.immersive.common.modules.VehicleCustomizationModule;
+import fr.dynamx.addons.immersive.common.modules.VehicleStorageModule;
 import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
-import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleParts;
+import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleStorage;
 import fr.dynamx.addons.immersive.common.modules.DamageModule;
 import fr.dynamx.api.events.VehicleEntityEvent;
 import fr.dynamx.client.handlers.hud.CarController;
@@ -45,10 +45,10 @@ public class ClientEventHandler {
                 if(vehicle.hasModuleOfType(fr.dynamx.common.entities.modules.SeatsModule.class)) {
                     fr.dynamx.common.entities.modules.SeatsModule seats = vehicle.getModuleByType(fr.dynamx.common.entities.modules.SeatsModule.class);
                     if(seats.getControllingPassenger() == mc.player) {
-                        VehicleCustomizationModule module = vehicle.getModuleByType(VehicleCustomizationModule.class);
-                        if(module != null) {
+                        VehicleStorageModule storage = vehicle.getModuleByType(VehicleStorageModule.class);
+                        if(storage != null) {
                             ImmersiveAddonPacketHandler.getInstance().getNetwork()
-                                    .sendToServer(new PacketOpenVehicleParts(vehicle.getEntityId()));
+                                    .sendToServer(new PacketOpenVehicleStorage(vehicle.getEntityId()));
                         }
                     }
                 }
@@ -58,25 +58,10 @@ public class ClientEventHandler {
 
 
 
-    @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if(event.phase != TickEvent.Phase.END)
-            return;
-        if(mc.player != null && KeyVehicleInventory.OPEN_INVENTORY != null && KeyVehicleInventory.OPEN_INVENTORY.isPressed()) {
-            if(mc.player.getRidingEntity() instanceof BaseVehicleEntity) {
-                BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) mc.player.getRidingEntity();
-                if(vehicle.hasModuleOfType(fr.dynamx.common.entities.modules.SeatsModule.class)) {
-                    fr.dynamx.common.entities.modules.SeatsModule seats = vehicle.getModuleByType(fr.dynamx.common.entities.modules.SeatsModule.class);
-                    if(seats.getControllingPassenger() == mc.player) {
-                        VehicleCustomizationModule module = vehicle.getModuleByType(VehicleCustomizationModule.class);
-                        if(module != null) {
-                            mc.displayGuiScreen(new GuiVehicleParts(mc.player.inventory, vehicle, module));
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // The GUI is opened server‑side via PacketOpenVehicleStorage. Opening it
+    // directly on the client caused desynchronization with the container,
+    // preventing inventory changes from being saved. The following handler was
+    // therefore removed.
 
     @SubscribeEvent
     public void updateVehicleController(VehicleEntityEvent.ControllerUpdate event) {

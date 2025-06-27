@@ -32,6 +32,7 @@ import fr.dynamx.common.physics.entities.parts.wheel.WheelPhysics;
 import fr.dynamx.addons.immersive.common.modules.VehiclePropertiesModule;
 import fr.dynamx.addons.immersive.common.modules.EngineTuningModule;
 import fr.dynamx.addons.immersive.common.modules.VehicleCustomizationModule;
+import fr.dynamx.addons.immersive.common.modules.VehicleStorageModule;
 import fr.dynamx.utils.DynamXUtils;
 import net.minecraft.entity.Entity;
 import fr.dynamx.addons.immersive.common.modules.WheelPropertiesModule;
@@ -63,6 +64,7 @@ public class ImmersiveEventHandler {
         event.getModuleList().add(new WheelPropertiesModule(entity));
         event.getModuleList().add(new EngineTuningModule(entity));
         event.getModuleList().add(new VehicleCustomizationModule(entity));
+        event.getModuleList().add(new VehicleStorageModule(entity));
   }
     @SubscribeEvent
     public void onDynxCollide(PhysicsEvent.PhysicsCollision event) {
