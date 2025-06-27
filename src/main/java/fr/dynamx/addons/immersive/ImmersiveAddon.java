@@ -46,8 +46,8 @@ public class ImmersiveAddon {
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
-        proxy.preInit(event);
         ImmersiveAddonConfig.init(event.getSuggestedConfigurationFile());
+        proxy.preInit(event);
         MinecraftForge.EVENT_BUS.register(new RegisterHandler());
         MinecraftForge.EVENT_BUS.register(new SoundRegister());
         if(Utils.isUsingMod("com.mrcrayfish.obfuscate.Obfuscate") || Loader.isModLoaded("obfuscate")) {

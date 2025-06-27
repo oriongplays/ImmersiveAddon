@@ -12,6 +12,10 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
+import net.minecraftforge.common.util.Constants;
 
 public class ContainerVehicleParts extends Container {
 
@@ -59,12 +63,29 @@ public class ContainerVehicleParts extends Container {
     }
 
     private void loadFromModule() {
-        for(int i=0;i<6;i++) {
+        for(int i = 0; i < 6; i++) {
             String part = module.getPart(getSlotName(i));
             if(!part.isEmpty()) {
-                Item item = Item.REGISTRY.getObject(new ResourceLocation(ImmersiveAddon.ID, part));
+                String base = part;
+                String lore = "";
+                int idx = part.lastIndexOf('_');
+                if(idx > 0) {
+                    base = part.substring(0, idx);
+                    lore = part.substring(idx + 1);
+                }
+                Item item = Item.REGISTRY.getObject(new ResourceLocation(ImmersiveAddon.ID, base));
                 if(item != null) {
-                    inv.setInventorySlotContents(i, new ItemStack(item));
+                    ItemStack stack = new ItemStack(item);
+                    if(!lore.isEmpty()) {
+                        NBTTagCompound tag = stack.hasTagCompound() ? stack.getTagCompound() : new NBTTagCompound();
+                        NBTTagCompound display = tag.hasKey("display", Constants.NBT.TAG_COMPOUND) ? tag.getCompoundTag("display") : new NBTTagCompound();
+                        NBTTagList list = new NBTTagList();
+                        list.appendTag(new NBTTagString(lore));
+                        display.setTag("Lore", list);
+                        tag.setTag("display", display);
+                        stack.setTagCompound(tag);
+                    }
+                    inv.setInventorySlotContents(i, stack);
                 }
             }
         }
@@ -74,10 +95,27 @@ public class ContainerVehicleParts extends Container {
     public void onContainerClosed(EntityPlayer player) {
         super.onContainerClosed(player);
         if(!player.world.isRemote) {
-            for(int i=0;i<6;i++) {
+            for(int i = 0; i < 6; i++) {
                 ItemStack stack = inv.getStackInSlot(i);
-                String name = stack.isEmpty() ? "" : stack.getItem().getRegistryName().getPath();
-                module.setPart(getSlotName(i), name);
+                String value = "";
+                if(!stack.isEmpty()) {
+                    String name = stack.getItem().getRegistryName().getPath();
+                    String lore = "";
+                    if(stack.hasTagCompound()) {
+                        NBTTagCompound tag = stack.getTagCompound();
+                        if(tag.hasKey("display", Constants.NBT.TAG_COMPOUND)) {
+                            NBTTagCompound display = tag.getCompoundTag("display");
+                            if(display.hasKey("Lore", Constants.NBT.TAG_LIST)) {
+                                NBTTagList list = display.getTagList("Lore", Constants.NBT.TAG_STRING);
+                                if(list.tagCount() > 0) {
+                                    lore = list.getStringTagAt(0);
+                                }
+                            }
+                        }
+                    }
+                    value = lore.isEmpty() ? name : name + "_" + lore;
+                }
+                module.setPart(getSlotName(i), value);
             }
         }
     }
