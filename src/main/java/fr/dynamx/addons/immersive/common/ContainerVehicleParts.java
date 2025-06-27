@@ -28,11 +28,20 @@ public class ContainerVehicleParts extends Container {
         this.module = module;
         loadFromModule();
         for(int i=0;i<6;i++) {
+            final int slotIndex = i;
             final String slotId = getSlotName(i);
             this.addSlotToContainer(new Slot(inv, i, 8 + i*18, 20) {
                 @Override
                 public boolean isItemValid(ItemStack stack) {
                     return stack.getItem() instanceof ItemVehiclePart && ((ItemVehiclePart) stack.getItem()).getSlotId().equals(slotId);
+                }
+                
+                @Override
+                public void onSlotChanged() {
+                    super.onSlotChanged();
+                    if(!playerInv.player.world.isRemote) {
+                        updateModuleSlot(slotIndex);
+                    }
                 }
             });
         }
@@ -91,31 +100,37 @@ public class ContainerVehicleParts extends Container {
         }
     }
 
+        private static String stackToValue(ItemStack stack) {
+        if(stack.isEmpty())
+            return "";
+        String name = stack.getItem().getRegistryName().getPath();
+        String lore = "";
+        if(stack.hasTagCompound()) {
+            NBTTagCompound tag = stack.getTagCompound();
+            if(tag.hasKey("display", Constants.NBT.TAG_COMPOUND)) {
+                NBTTagCompound display = tag.getCompoundTag("display");
+                if(display.hasKey("Lore", Constants.NBT.TAG_LIST)) {
+                    NBTTagList list = display.getTagList("Lore", Constants.NBT.TAG_STRING);
+                    if(list.tagCount() > 0) {
+                        lore = list.getStringTagAt(0);
+                    }
+                }
+            }
+        }
+        return lore.isEmpty() ? name : name + "_" + lore;
+    }
+
+    private void updateModuleSlot(int slot) {
+        ItemStack stack = inv.getStackInSlot(slot);
+        module.setPart(getSlotName(slot), stackToValue(stack));
+    }
+
     @Override
     public void onContainerClosed(EntityPlayer player) {
         super.onContainerClosed(player);
         if(!player.world.isRemote) {
             for(int i = 0; i < 6; i++) {
-                ItemStack stack = inv.getStackInSlot(i);
-                String value = "";
-                if(!stack.isEmpty()) {
-                    String name = stack.getItem().getRegistryName().getPath();
-                    String lore = "";
-                    if(stack.hasTagCompound()) {
-                        NBTTagCompound tag = stack.getTagCompound();
-                        if(tag.hasKey("display", Constants.NBT.TAG_COMPOUND)) {
-                            NBTTagCompound display = tag.getCompoundTag("display");
-                            if(display.hasKey("Lore", Constants.NBT.TAG_LIST)) {
-                                NBTTagList list = display.getTagList("Lore", Constants.NBT.TAG_STRING);
-                                if(list.tagCount() > 0) {
-                                    lore = list.getStringTagAt(0);
-                                }
-                            }
-                        }
-                    }
-                    value = lore.isEmpty() ? name : name + "_" + lore;
-                }
-                module.setPart(getSlotName(i), value);
+                updateModuleSlot(i);
             }
         }
     }

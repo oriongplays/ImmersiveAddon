@@ -10,4 +10,4 @@ item.roof.name=Toit
 item.side_skirt.name=Bas de caisse
 gui.vehicle_parts.title=Pièces de véhicule
 gui.vehicle_storage.title=Inventaire du véhicule
-key.vehicle_inventory=Inventaire du véhicule
+key.vehicle_parts=Inventaire du véhicule

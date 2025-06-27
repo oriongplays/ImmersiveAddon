@@ -10,4 +10,4 @@ item.roof.name=Roof
 item.side_skirt.name=Side Skirt
 gui.vehicle_parts.title=Vehicle Parts
 gui.vehicle_storage.title=Vehicle Inventory
-key.vehicle_inventory=Vehicle Inventory
+key.vehicle_parts=Vehicle Parts Inventory
