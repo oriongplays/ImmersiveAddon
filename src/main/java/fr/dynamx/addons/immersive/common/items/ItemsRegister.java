@@ -28,6 +28,10 @@ public class ItemsRegister{
     public static ItemVehiclePart SPOILER;
     public static ItemVehiclePart ROOF;
     public static ItemVehiclePart SIDE_SKIRT;
+    public static ItemVehiclePart ACCESSORY;
+    public static ItemVehiclePart SOUND;
+    public static ItemVehiclePart NEON;
+    public static Item SCANNER;
 
     public void init()
     {
@@ -42,6 +46,10 @@ public class ItemsRegister{
         SPOILER = new ItemVehiclePart("spoiler", "spoiler");
         ROOF = new ItemVehiclePart("roof", "roof");
         SIDE_SKIRT = new ItemVehiclePart("side_skirt", "side_skirt");
+        ACCESSORY = new ItemVehiclePart("accessory", "accessory");
+        SOUND = new ItemVehiclePart("sound", "sound");
+        NEON = new ItemVehiclePart("neon", "neon");
+        SCANNER = new ItemScanner("scanner");
     }
 
 

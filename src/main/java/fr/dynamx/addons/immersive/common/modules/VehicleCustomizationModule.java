@@ -26,6 +26,12 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
     private final EntityVariable<String> roof = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
     @SynchronizedEntityVariable(name = "side_skirt")
     private final EntityVariable<String> sideSkirt = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    @SynchronizedEntityVariable(name = "accessory")
+    private final EntityVariable<String> accessory = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    @SynchronizedEntityVariable(name = "sound")
+    private final EntityVariable<String> sound = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    @SynchronizedEntityVariable(name = "neon")
+    private final EntityVariable<String> neon = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
 
     public VehicleCustomizationModule(BaseVehicleEntity<?> entity) {
         this.entity = entity;
@@ -51,6 +57,15 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
             case "side_skirt":
                 sideSkirt.set(name);
                 break;
+            case "accessory":
+                accessory.set(name);
+                break;
+            case "sound":
+                sound.set(name);
+                break;
+            case "neon":
+                neon.set(name);
+                break;
         }
     }
 
@@ -68,6 +83,12 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
                 return roof.get();
             case "side_skirt":
                 return sideSkirt.get();
+            case "accessory":
+                return accessory.get();
+            case "sound":
+                return sound.get();
+            case "neon":
+                return neon.get();
         }
         return "";
     }
@@ -84,6 +105,9 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
         tag.setString("spoiler", spoiler.get());
         tag.setString("roof", roof.get());
         tag.setString("side_skirt", sideSkirt.get());
+        tag.setString("accessory", accessory.get());
+        tag.setString("sound", sound.get());
+        tag.setString("neon", neon.get());
     }
 
     @Override
@@ -94,5 +118,8 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
         spoiler.set(tag.getString("spoiler"));
         roof.set(tag.getString("roof"));
         sideSkirt.set(tag.getString("side_skirt"));
+        accessory.set(tag.getString("accessory"));
+        sound.set(tag.getString("sound"));
+        neon.set(tag.getString("neon"));
     }
 }

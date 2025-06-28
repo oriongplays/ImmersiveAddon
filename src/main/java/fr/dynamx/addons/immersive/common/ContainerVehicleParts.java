@@ -19,7 +19,7 @@ import net.minecraftforge.common.util.Constants;
 
 public class ContainerVehicleParts extends Container {
 
-    private final InventoryBasic inv = new InventoryBasic("Parts", false, 6);
+    private final InventoryBasic inv = new InventoryBasic("Parts", false, 9);
     private final InventoryPlayer playerInv;
     private final VehicleCustomizationModule module;
 
@@ -27,7 +27,7 @@ public class ContainerVehicleParts extends Container {
         this.playerInv = playerInv;
         this.module = module;
         loadFromModule();
-        for(int i=0;i<6;i++) {
+        for(int i=0;i<9;i++) {
             final int slotIndex = i;
             final String slotId = getSlotName(i);
             this.addSlotToContainer(new Slot(inv, i, 8 + i*18, 20) {
@@ -67,12 +67,15 @@ public class ContainerVehicleParts extends Container {
             case 3: return "spoiler";
             case 4: return "roof";
             case 5: return "side_skirt";
+            case 6: return "accessory";
+            case 7: return "sound";
+            case 8: return "neon";
         }
         return "";
     }
 
     private void loadFromModule() {
-        for(int i = 0; i < 6; i++) {
+        for(int i = 0; i < 9; i++) {
             String part = module.getPart(getSlotName(i));
             if(!part.isEmpty()) {
                 String base = part;
@@ -129,7 +132,7 @@ public class ContainerVehicleParts extends Container {
     public void onContainerClosed(EntityPlayer player) {
         super.onContainerClosed(player);
         if(!player.world.isRemote) {
-            for(int i = 0; i < 6; i++) {
+                for(int i = 0; i < 9; i++) {
                 updateModuleSlot(i);
             }
         }
@@ -142,12 +145,12 @@ public class ContainerVehicleParts extends Container {
         if(slot != null && slot.getHasStack()) {
             ItemStack slotStack = slot.getStack();
             stack = slotStack.copy();
-            if(index < 6) {
-                if(!mergeItemStack(slotStack, 6, this.inventorySlots.size(), true))
+            if(index < 9) {
+                if(!mergeItemStack(slotStack, 9, this.inventorySlots.size(), true))
                     return ItemStack.EMPTY;
             } else {
                 boolean moved = false;
-                for(int i=0;i<6 && !moved;i++) {
+                for(int i=0;i<9 && !moved;i++) {
                     Slot target = this.inventorySlots.get(i);
                     if(target.isItemValid(slotStack) && !target.getHasStack()) {
                         if(!mergeItemStack(slotStack, i, i+1, false))
