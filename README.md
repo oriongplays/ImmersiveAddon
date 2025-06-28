@@ -7,8 +7,11 @@ This addon adds new features to DynamX :
 - Harrow
 - Anti puncture
 - Hands on the steering wheel
+- Optional Dynamic Lights support for vehicle beacons and headlights
+- Requires the Dynamic Lights mod on the client.
 - x
  - Engine upgrades via `/immersiveaddon mec vehicle engine <level> <player>` command
+ 
 
 ### How to add modules:
 

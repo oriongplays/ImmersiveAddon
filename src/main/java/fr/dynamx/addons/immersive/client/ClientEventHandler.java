@@ -10,6 +10,12 @@ import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleParts;
 import fr.dynamx.addons.immersive.common.items.ItemsRegister;
 import fr.dynamx.addons.immersive.client.KeyVehicleInventory;
 import fr.dynamx.addons.immersive.common.modules.DamageModule;
+import fr.dynamx.addons.immersive.client.VehicleDynamicLight;
+import fr.dynamx.addons.basics.common.modules.BasicsAddonModule;
+import atomicstryker.dynamiclights.client.DynamicLights;
+import net.minecraftforge.fml.common.Loader;
+import java.util.HashMap;
+import java.util.Map;
 import fr.dynamx.api.events.VehicleEntityEvent;
 import fr.dynamx.client.handlers.hud.CarController;
 import fr.dynamx.client.handlers.hud.HelicopterController;
@@ -37,6 +43,11 @@ public class ClientEventHandler {
 
     private static long lastJump = 0;
 
+        /**
+     * Active dynamic light sources for vehicles on the client.
+     */
+    private final Map<BaseVehicleEntity<?>, VehicleDynamicLight> vehicleLights = new HashMap<>();
+
     @SubscribeEvent
     public void handleInventoryKey(TickEvent.ClientTickEvent event) {
         if(event.phase != TickEvent.Phase.END)
@@ -61,6 +72,52 @@ public class ClientEventHandler {
             }
         }
     }
+
+
+    @SubscribeEvent
+    public void updateVehicleLights(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END)
+            return;
+
+        if (mc.world == null)
+            return;
+
+        if (!Loader.isModLoaded("dynamiclights"))
+            return;
+
+        mc.world.loadedEntityList.stream()
+                .filter(e -> e instanceof BaseVehicleEntity)
+                .map(e -> (BaseVehicleEntity<?>) e)
+                .forEach(vehicle -> {
+                    BasicsAddonModule module = vehicle.getModuleByType(BasicsAddonModule.class);
+                    if (module == null)
+                        return;
+
+                    boolean active = module.isHeadLightsOn() || module.isBeaconsOn();
+                    VehicleDynamicLight light = vehicleLights.get(vehicle);
+
+                    if (active) {
+                        if (light == null) {
+                            light = new VehicleDynamicLight(vehicle, module);
+                            vehicleLights.put(vehicle, light);
+                            DynamicLights.addLightSource(light);
+                        }
+                    } else if (light != null) {
+                        DynamicLights.removeLightSource(light);
+                        vehicleLights.remove(vehicle);
+                    }
+                });
+
+        // Clean up lights from dead vehicles
+        vehicleLights.entrySet().removeIf(entry -> {
+            if (entry.getKey().isDead) {
+                DynamicLights.removeLightSource(entry.getValue());
+                return true;
+            }
+            return false;
+        });
+    }
+
 
 
 
