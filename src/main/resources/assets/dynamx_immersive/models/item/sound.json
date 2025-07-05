@@ -1,6 +1,29 @@
 {
-  "parent": "item/generated",
-  "textures": {
-      "layer0": "dynamx_immersive:items/sound"
-  }
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"display": {
+		"thirdperson_righthand": {
+			"scale": [0, 0, 0]
+		},
+		"thirdperson_lefthand": {
+			"scale": [0, 0, 0]
+		},
+		"firstperson_righthand": {
+			"scale": [0, 0, 0]
+		},
+		"firstperson_lefthand": {
+			"scale": [0, 0, 0]
+		},
+		"ground": {
+			"rotation": [90, 0, 0],
+			"translation": [0, -2, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"head": {
+			"scale": [0, 0, 0]
+		},
+		"fixed": {
+			"rotation": [0, -180, 0]
+		}
+	}
 }

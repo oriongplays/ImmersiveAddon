@@ -10,7 +10,8 @@ import net.minecraft.util.ResourceLocation;
 
 public class GuiVehicleParts extends GuiContainer {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/generic_54.png");
+    // Use a custom texture for the parts inventory
+    private static final ResourceLocation TEXTURE = new ResourceLocation("dynamx_immersive", "textures/gui/vehicle_parts.png");
     private final InventoryPlayer playerInv;
 
     public GuiVehicleParts(InventoryPlayer playerInv, BaseVehicleEntity<?> entity, VehicleCustomizationModule module) {
@@ -32,5 +33,12 @@ public class GuiVehicleParts extends GuiContainer {
         String name = "Vehicle Parts";
         this.fontRenderer.drawString(name, 8, 6, 4210752);
         this.fontRenderer.drawString(playerInv.getDisplayName().getUnformattedText(), 8, ySize - 96 + 2, 4210752);
+    }
+    
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        this.drawDefaultBackground();
+        super.drawScreen(mouseX, mouseY, partialTicks);
+        this.renderHoveredToolTip(mouseX, mouseY);
     }
 }
