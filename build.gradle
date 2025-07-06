@@ -53,7 +53,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'com.github.goxr3plus', name:'java-stream-player', version: '9.0.4'
+    compile group: 'javazoom', name:'jlayer', version: '1.0.1'
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
     // All bundled libraries except Dynamic Lights
     compile fileTree(dir: 'libs', include: '*.jar', exclude: 'DynamicLights*.jar')

@@ -9,7 +9,10 @@ import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
 import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleParts;
 import fr.dynamx.addons.immersive.common.items.ItemsRegister;
 import fr.dynamx.addons.immersive.client.KeyVehicleInventory;
+import fr.dynamx.addons.immersive.client.KeyRadio;
+import fr.dynamx.addons.immersive.client.GuiRadio;
 import fr.dynamx.addons.immersive.common.modules.DamageModule;
+import fr.dynamx.addons.immersive.common.modules.RadioModule;
 import fr.dynamx.addons.immersive.client.VehicleDynamicLight;
 import fr.dynamx.addons.basics.common.modules.BasicsAddonModule;
 import atomicstryker.dynamiclights.client.DynamicLights;
@@ -72,6 +75,25 @@ public class ClientEventHandler {
             }
         }
     }
+
+    @SubscribeEvent
+    public void handleRadioGuiKey(TickEvent.ClientTickEvent event) {
+        if(event.phase != TickEvent.Phase.END)
+            return;
+        if(mc.player != null && KeyRadio.OPEN_RADIO != null && KeyRadio.OPEN_RADIO.isPressed()) {
+            if(mc.player.getRidingEntity() instanceof BaseVehicleEntity) {
+                BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) mc.player.getRidingEntity();
+                fr.dynamx.common.entities.modules.SeatsModule seats = vehicle.getModuleByType(fr.dynamx.common.entities.modules.SeatsModule.class);
+                if(seats != null && seats.getControllingPassenger() == mc.player) {
+                    RadioModule module = vehicle.getModuleByType(RadioModule.class);
+                    if(module != null) {
+                        mc.displayGuiScreen(new GuiRadio(module));
+                    }
+                }
+            }
+        }
+    }
+
 
 
     @SubscribeEvent

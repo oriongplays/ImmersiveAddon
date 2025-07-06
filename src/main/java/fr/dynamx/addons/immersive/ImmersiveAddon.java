@@ -2,11 +2,13 @@ package fr.dynamx.addons.immersive;
 
 import fr.dynamx.addons.immersive.client.ClientEventHandler;
 import fr.dynamx.addons.immersive.client.HandAnimClientEventHandler;
+import fr.dynamx.addons.immersive.client.keybind.KeyBindings;
 import fr.dynamx.addons.immersive.common.HandAnimationEventHandler;
 import fr.dynamx.addons.immersive.common.ImmersiveEventHandler;
 import fr.dynamx.addons.immersive.common.GuiHandler;
 import fr.dynamx.addons.immersive.common.items.RegisterHandler;
 import fr.dynamx.addons.immersive.common.items.SoundRegister;
+import fr.dynamx.addons.immersive.common.helpers.RadioPlayer;
 import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
 import fr.dynamx.addons.immersive.proxy.CommonProxy;
 import fr.dynamx.addons.immersive.server.commands.CommandShowNames;
@@ -38,7 +40,7 @@ public class ImmersiveAddon {
 
     @SidedProxy(modId = ID, clientSide = "fr.dynamx.addons.immersive.proxy.ClientProxy", serverSide = "fr.dynamx.addons.immersive.proxy.ServerProxy")
     public static CommonProxy proxy;
-    //public static RadioPlayer radioPlayer = new RadioPlayer();
+    public static RadioPlayer radioPlayer = new RadioPlayer();
 
     @DynamXAddon.AddonEventSubscriber
     public static void initAddon() {
@@ -60,6 +62,7 @@ public class ImmersiveAddon {
 
         if (event.getSide().isClient()) {
             MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
+            KeyBindings.register();
         }
 
         MinecraftForge.EVENT_BUS.register(new ImmersiveEventHandler());

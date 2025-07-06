@@ -15,6 +15,10 @@ public class ConfigReader {
 
     public static void readFromFile() throws IOException {
         File json = new File("config/radiofrequencies.json");
+        if(!json.exists()) {
+            frequencies = new ArrayList<>();
+            return;
+        }
         RadioFrequency[] freqJson = new Gson().fromJson(FileUtils.readFileToString(json, StandardCharsets.UTF_8), RadioFrequency[].class);
         frequencies = new ArrayList<>(Arrays.asList(freqJson));
         frequencies.sort((o1, o2) -> Float.compare(o1.getFrequency(), o2.getFrequency()));
@@ -22,17 +26,26 @@ public class ConfigReader {
 
     public static void writeToFile() throws IOException {
         File json = new File("config/radiofrequencies.json");
+        if(!json.getParentFile().exists()) {
+            json.getParentFile().mkdirs();
+        }
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         FileUtils.writeStringToFile(json, gson.toJson(frequencies));
     }
 
     public static String getFileContent() throws IOException {
         File json = new File("config/radiofrequencies.json");
+        if(!json.exists()) {
+            return "[]";
+        }
         return FileUtils.readFileToString(json, StandardCharsets.UTF_8);
     }
 
     public static void writeToFileString(String string) throws IOException {
         File json = new File("config/radiofrequencies.json");
+        if(!json.getParentFile().exists()) {
+            json.getParentFile().mkdirs();
+        }
         FileUtils.writeStringToFile(json, string);
     }
 }
