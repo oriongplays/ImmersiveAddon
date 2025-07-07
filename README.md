@@ -14,8 +14,13 @@ This addon adds new features to DynamX :
   integration (https://github.com/montoyo/mcef). If WebDisplays or MCEF is
   available, streams are played via an invisible screen so anyone within 16
   blocks of the vehicle hears them. If WebDisplays' screen API isn't available
-  the addon falls back to MCEF's browser. Enable debug mode in the config to
-  print playback details in the console.
+  the addon falls back to MCEF's browser. Playback volume follows the
+  Minecraft music slider and automatically stops when leaving a 16‑block
+  radius. Enable debug mode in the config to print playback details in the
+  console.
+  Note that the official WebDisplays release for Minecraft 1.12.2 does not
+  provide the `montoyo.webdisplays.api.ScreenHelper` class, so only the local
+  MCEF fallback will work with that version.
  
 
 ### How to add modules:

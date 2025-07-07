@@ -10,7 +10,7 @@ import fr.dynamx.addons.immersive.common.items.RegisterHandler;
 import fr.dynamx.addons.immersive.common.items.SoundRegister;
 import fr.dynamx.addons.immersive.common.helpers.IRadioPlayer;
 import fr.dynamx.addons.immersive.common.helpers.JLayerRadioPlayer;
-import fr.dynamx.addons.immersive.common.helpers.WebDisplaysRadioPlayer;
+import fr.dynamx.addons.immersive.common.helpers.MCEFRadioPlayer;
 import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
 import fr.dynamx.addons.immersive.proxy.CommonProxy;
 import fr.dynamx.addons.immersive.server.commands.CommandShowNames;
@@ -58,8 +58,8 @@ public class ImmersiveAddon {
         proxy.preInit(event);
         if(event.getSide().isClient()) {
             if(Loader.isModLoaded("mcef")) {
-                LOGGER.info("Using WebDisplays based radio player");
-                radioPlayer = new WebDisplaysRadioPlayer();
+                LOGGER.info("Using MCEF based radio player");
+                radioPlayer = new MCEFRadioPlayer();
             } else {
                 LOGGER.info("Using JLayer based radio player");
                 radioPlayer = new JLayerRadioPlayer();

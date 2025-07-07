@@ -95,7 +95,8 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
 
             if(ImmersiveAddon.radioPlayer != null)
             {
-                ImmersiveAddon.radioPlayer.setGain(Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.RECORDS));
+                // Use the MUSIC volume slider so players can easily adjust radio loudness
+                ImmersiveAddon.radioPlayer.setGain(Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.MUSIC));
             }
 
             if(cachedRadioOn != isRadioOn)
