@@ -44,7 +44,7 @@ public class ImmersiveAddon {
     public static CommonProxy proxy;
     /**
      * Active radio player implementation. Defaults to the JLayer based player
-     * but will use the WebDisplays backend when the mod is available.
+     * but will use the WebDisplays backend when the MCEF mod is available.
      */
     public static IRadioPlayer radioPlayer;
 
@@ -57,7 +57,7 @@ public class ImmersiveAddon {
         ImmersiveAddonConfig.init(event.getSuggestedConfigurationFile());
         proxy.preInit(event);
         if(event.getSide().isClient()) {
-            if(Loader.isModLoaded("webdisplays") || Loader.isModLoaded("mcef")) {
+            if(Loader.isModLoaded("mcef")) {
                 LOGGER.info("Using WebDisplays based radio player");
                 radioPlayer = new WebDisplaysRadioPlayer();
             } else {

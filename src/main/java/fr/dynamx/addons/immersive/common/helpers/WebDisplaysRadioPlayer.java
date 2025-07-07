@@ -2,6 +2,7 @@ package fr.dynamx.addons.immersive.common.helpers;
 
 import net.minecraftforge.fml.common.Loader;
 import fr.dynamx.addons.immersive.ImmersiveAddon;
+import fr.dynamx.addons.immersive.common.helpers.JLayerRadioPlayer;
 
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -16,7 +17,16 @@ public class WebDisplaysRadioPlayer implements IRadioPlayer {
     private Object screen;
 
     private boolean available() {
-        return Loader.isModLoaded("webdisplays") || Loader.isModLoaded("mcef");
+        if(!Loader.isModLoaded("mcef"))
+            return false;
+        if(Loader.isModLoaded("webdisplays")) {
+            try {
+                Class.forName("montoyo.webdisplays.api.ScreenHelper");
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -48,11 +58,18 @@ public class WebDisplaysRadioPlayer implements IRadioPlayer {
             }
 
             // Fallback using MCEF directly
-            Class<?> api = Class.forName("montoyo.mcef.MCEFApi");
-            Method get = api.getMethod("getAPI");
-            Object inst = get.invoke(null);
-            Method create = inst.getClass().getMethod("createBrowser", String.class, boolean.class);
-            browser = create.invoke(inst, radioUrl.toString(), false);
+            try {
+                Class<?> api = Class.forName("montoyo.mcef.MCEFApi");
+                Method get = api.getMethod("getAPI");
+                Object inst = get.invoke(null);
+                Method create = inst.getClass().getMethod("createBrowser", String.class, boolean.class);
+                browser = create.invoke(inst, radioUrl.toString(), false);
+            } catch (ClassNotFoundException e) {
+                ImmersiveAddon.LOGGER.warn("MCEF not installed; radio disabled");
+                ImmersiveAddon.radioPlayer = new JLayerRadioPlayer();
+                ImmersiveAddon.radioPlayer.playRadio(radioUrl);
+                return;
+            }
         } catch (Throwable t) {
             ImmersiveAddon.LOGGER.error("[WebDisplays] Failed to start radio", t);
         }

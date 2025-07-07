@@ -10,11 +10,12 @@ This addon adds new features to DynamX :
 - Optional Dynamic Lights support for vehicle beacons and headlights
 - Requires the Dynamic Lights mod on the client.
 - Engine upgrades via `/immersiveaddon mec vehicle engine <level> <player>` command
-- Web radio playback. If WebDisplays or MCEF is installed, streams are played
-  via an invisible screen so anyone within 16 blocks of the vehicle hears them.
-  If WebDisplays' screen API isn't available the addon falls back to MCEF's
-  browser. Enable debug mode in the config to print playback details in the
-  console.
+- Web radio playback. If WebDisplays is installed, the MCEF mod is required for
+  integration (https://github.com/montoyo/mcef). If WebDisplays or MCEF is
+  available, streams are played via an invisible screen so anyone within 16
+  blocks of the vehicle hears them. If WebDisplays' screen API isn't available
+  the addon falls back to MCEF's browser. Enable debug mode in the config to
+  print playback details in the console.
  
 
 ### How to add modules:
