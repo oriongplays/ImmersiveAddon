@@ -9,8 +9,12 @@ This addon adds new features to DynamX :
 - Hands on the steering wheel
 - Optional Dynamic Lights support for vehicle beacons and headlights
 - Requires the Dynamic Lights mod on the client.
-- x
- - Engine upgrades via `/immersiveaddon mec vehicle engine <level> <player>` command
+- Engine upgrades via `/immersiveaddon mec vehicle engine <level> <player>` command
+- Web radio playback. If WebDisplays or MCEF is installed, streams are played
+  via an invisible screen so anyone within 16 blocks of the vehicle hears them.
+  If WebDisplays' screen API isn't available the addon falls back to MCEF's
+  browser. Enable debug mode in the config to print playback details in the
+  console.
  
 
 ### How to add modules:

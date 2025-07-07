@@ -8,7 +8,9 @@ import fr.dynamx.addons.immersive.common.ImmersiveEventHandler;
 import fr.dynamx.addons.immersive.common.GuiHandler;
 import fr.dynamx.addons.immersive.common.items.RegisterHandler;
 import fr.dynamx.addons.immersive.common.items.SoundRegister;
-import fr.dynamx.addons.immersive.common.helpers.RadioPlayer;
+import fr.dynamx.addons.immersive.common.helpers.IRadioPlayer;
+import fr.dynamx.addons.immersive.common.helpers.JLayerRadioPlayer;
+import fr.dynamx.addons.immersive.common.helpers.WebDisplaysRadioPlayer;
 import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
 import fr.dynamx.addons.immersive.proxy.CommonProxy;
 import fr.dynamx.addons.immersive.server.commands.CommandShowNames;
@@ -40,7 +42,11 @@ public class ImmersiveAddon {
 
     @SidedProxy(modId = ID, clientSide = "fr.dynamx.addons.immersive.proxy.ClientProxy", serverSide = "fr.dynamx.addons.immersive.proxy.ServerProxy")
     public static CommonProxy proxy;
-    public static RadioPlayer radioPlayer = new RadioPlayer();
+    /**
+     * Active radio player implementation. Defaults to the JLayer based player
+     * but will use the WebDisplays backend when the mod is available.
+     */
+    public static IRadioPlayer radioPlayer;
 
     @DynamXAddon.AddonEventSubscriber
     public static void initAddon() {
@@ -50,6 +56,17 @@ public class ImmersiveAddon {
     public void onPreInit(FMLPreInitializationEvent event) {
         ImmersiveAddonConfig.init(event.getSuggestedConfigurationFile());
         proxy.preInit(event);
+        if(event.getSide().isClient()) {
+            if(Loader.isModLoaded("webdisplays") || Loader.isModLoaded("mcef")) {
+                LOGGER.info("Using WebDisplays based radio player");
+                radioPlayer = new WebDisplaysRadioPlayer();
+            } else {
+                LOGGER.info("Using JLayer based radio player");
+                radioPlayer = new JLayerRadioPlayer();
+            }
+        } else {
+            LOGGER.info("Pre-initializing on dedicated server");
+        }
         MinecraftForge.EVENT_BUS.register(new RegisterHandler());
         MinecraftForge.EVENT_BUS.register(new SoundRegister());
         if(Utils.isUsingMod("com.mrcrayfish.obfuscate.Obfuscate") || Loader.isModLoaded("obfuscate")) {

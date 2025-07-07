@@ -3,6 +3,8 @@ package fr.dynamx.addons.immersive.client.controllers;
 import fr.aym.acsguis.component.GuiComponent;
 import fr.dynamx.addons.immersive.common.helpers.ConfigReader;
 import fr.dynamx.addons.immersive.common.modules.RadioModule;
+import fr.dynamx.addons.immersive.ImmersiveAddon;
+import fr.dynamx.addons.immersive.ImmersiveAddonConfig;
 import fr.dynamx.api.entities.modules.IVehicleController;
 import fr.dynamx.common.entities.BaseVehicleEntity;
 import net.minecraft.client.settings.KeyBinding;
@@ -52,18 +54,27 @@ public class RadioController implements IVehicleController {
         if (delay > 3) {
             if (play.isPressed()) {
                 module.setRadioOn(!module.isRadioOn());
+                                if (ImmersiveAddonConfig.debug) {
+                    ImmersiveAddon.LOGGER.debug("Toggling radio on {} -> {}", entity.getName(), module.isRadioOn());
+                }
                 delay = 0;
             } else {
                 if (module.isRadioOn()) {
                     if (right.isPressed()) {
                         if (ConfigReader.frequencies != null && !ConfigReader.frequencies.isEmpty()) {
                             module.setCurrentRadioIndex(Math.min(module.getCurrentRadioIndex() + 1, ConfigReader.frequencies.size() - 1));
+                                                        if (ImmersiveAddonConfig.debug) {
+                                ImmersiveAddon.LOGGER.debug("Next station {} for {}", module.getCurrentRadioIndex(), entity.getName());
+                            }
                         }
                         delay = 0;
                     }
                     if (left.isPressed()) {
                         if (ConfigReader.frequencies != null && !ConfigReader.frequencies.isEmpty()) {
                             module.setCurrentRadioIndex(Math.max(module.getCurrentRadioIndex() - 1, 0));
+                                                        if (ImmersiveAddonConfig.debug) {
+                                ImmersiveAddon.LOGGER.debug("Prev station {} for {}", module.getCurrentRadioIndex(), entity.getName());
+                            }
                         }
                         delay = 0;
                     }

@@ -26,6 +26,7 @@ public class RadioEvent {
                 RadioModule module = event.getEntity().getModuleByType(RadioModule.class);
                 module.resetCached();
             }
+            ImmersiveAddon.LOGGER.debug("Stopping radio on dismount");
             ImmersiveAddon.radioPlayer.stopRadio();
         }
     }
@@ -34,6 +35,7 @@ public class RadioEvent {
     @SideOnly(Side.CLIENT)
     public static void onPlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
         if(ImmersiveAddon.radioPlayer != null) {
+            ImmersiveAddon.LOGGER.debug("Stopping radio on player logout");
             ImmersiveAddon.radioPlayer.stopRadio();
         }
     }
@@ -43,6 +45,7 @@ public class RadioEvent {
         try {
             ImmersiveAddonPacketHandler.getInstance().getNetwork().sendTo(new SendRadioFreqConfig(ConfigReader.getFileContent()), (EntityPlayerMP) event.player);
         } catch (IOException e) {
+            ImmersiveAddon.LOGGER.debug("Sent radio config to {}", event.player.getName());
             e.printStackTrace();
         }
     }

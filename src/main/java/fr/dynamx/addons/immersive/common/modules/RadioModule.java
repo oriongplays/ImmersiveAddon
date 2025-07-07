@@ -3,7 +3,9 @@ package fr.dynamx.addons.immersive.common.modules;
 import fr.dynamx.addons.immersive.ImmersiveAddon;
 import fr.dynamx.addons.immersive.client.controllers.RadioController;
 import fr.dynamx.addons.immersive.common.helpers.ConfigReader;
-import fr.dynamx.addons.immersive.common.helpers.RadioPlayer;
+import fr.dynamx.addons.immersive.common.helpers.IRadioPlayer;
+import fr.dynamx.addons.immersive.common.helpers.JLayerRadioPlayer;
+import fr.dynamx.addons.immersive.ImmersiveAddonConfig;
 import fr.dynamx.addons.immersive.common.infos.RadioAddonInfos;
 import fr.dynamx.api.entities.modules.IPhysicsModule;
 import fr.dynamx.api.entities.modules.IVehicleController;
@@ -54,6 +56,9 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
     {
         cachedRadioOn = false;
         cachedRadioIndex = -1;
+                if(ImmersiveAddonConfig.debug) {
+            ImmersiveAddon.LOGGER.debug("Cached radio state reset for {}", entity.getName());
+        }
     }
 
     @Override
@@ -63,17 +68,29 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
         {
             if(!entity.world.isRemote)
                 return;
+            if(ImmersiveAddonConfig.debug) {
+                ImmersiveAddon.LOGGER.debug("RadioModule update for {}", entity.getName());
+            }
 
             SeatsModule seatsModule = entity.getModuleByType(SeatsModule.class);
             if(seatsModule == null)
                 return;
 
-            if(!seatsModule.isEntitySitting(Minecraft.getMinecraft().player))
+            double distSq = entity.getDistanceSq(Minecraft.getMinecraft().player);
+            if(distSq > 256)
+            {
+                if(cachedRadioOn)
+                {
+                    ImmersiveAddon.LOGGER.debug("Player too far from {} - stopping radio", entity.getName());
+                    ImmersiveAddon.radioPlayer.stopRadio();
+                    resetCached();
+                }
                 return;
+            }
 
             if(ImmersiveAddon.radioPlayer == null)
             {
-                ImmersiveAddon.radioPlayer = new RadioPlayer();
+                ImmersiveAddon.radioPlayer = new JLayerRadioPlayer();
             }
 
             if(ImmersiveAddon.radioPlayer != null)
@@ -90,6 +107,7 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
                         int idx = Math.min(Math.max(getCurrentRadioIndex(), 0), ConfigReader.frequencies.size() - 1);
                         Minecraft.getMinecraft().player.sendStatusMessage(new net.minecraft.util.text.TextComponentString("§c§lRadio: §r§e" + ConfigReader.frequencies.get(idx).getName()), true);
                         try {
+                            ImmersiveAddon.LOGGER.debug("Starting radio {} for {}", idx, entity.getName());
                             ImmersiveAddon.radioPlayer.playRadio(new URL(ConfigReader.frequencies.get(idx).getUrl()));
                         } catch (MalformedURLException e) {
                             throw new RuntimeException(e);
@@ -97,6 +115,7 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
                     }
                 } else {
                     Minecraft.getMinecraft().player.sendStatusMessage(new net.minecraft.util.text.TextComponentString("§c§lRadio: §r§eRadio is off"), true);
+                    ImmersiveAddon.LOGGER.debug("Stopping radio for {}", entity.getName());
                     ImmersiveAddon.radioPlayer.stopRadio();
                     resetCached();
                 }
@@ -110,6 +129,7 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
                         int idx = Math.min(Math.max(getCurrentRadioIndex(), 0), ConfigReader.frequencies.size() - 1);
                         try {
                             Minecraft.getMinecraft().player.sendStatusMessage(new net.minecraft.util.text.TextComponentString("§c§lRadio: §r§e" + ConfigReader.frequencies.get(idx).getName()), true);
+                            ImmersiveAddon.LOGGER.debug("Changing station to {} for {}", idx, entity.getName());
                             ImmersiveAddon.radioPlayer.playRadio(new URL(ConfigReader.frequencies.get(idx).getUrl()));
                         } catch (MalformedURLException e) {
                             throw new RuntimeException(e);

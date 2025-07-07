@@ -2,16 +2,17 @@ package fr.dynamx.addons.immersive.common.helpers;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import javazoom.jl.player.Player;
+import fr.dynamx.addons.immersive.ImmersiveAddon;
 
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Simple radio player that streams audio from a URL using JLayer's Player
+ * Simple radio player that streams audio from a URL using JLayer's {@link Player}.
  * Inspired by MinecraftTransportSimulator's radio implementation.
  */
-public class RadioPlayer {
+public class JLayerRadioPlayer implements IRadioPlayer {
     private static final ExecutorService SERVICE = Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder().setNameFormat("radio-player-%d").build());
 
@@ -21,6 +22,7 @@ public class RadioPlayer {
      * Plays the given radio stream asynchronously. Any previous stream is stopped first.
      */
     public void playRadio(URL radioUrl) {
+                ImmersiveAddon.LOGGER.info("[JLayer] playRadio {}", radioUrl);
         SERVICE.execute(() -> {
             stopRadioInternal();
             try {
@@ -30,7 +32,7 @@ public class RadioPlayer {
                 }
                 p.play();
             } catch (Exception e) {
-                e.printStackTrace();
+                ImmersiveAddon.LOGGER.error("Failed to play radio", e);
             }
         });
     }
@@ -39,6 +41,7 @@ public class RadioPlayer {
      * Stops the current radio stream if one is active.
      */
     public void stopRadio() {
+                ImmersiveAddon.LOGGER.info("[JLayer] stopRadio");
         SERVICE.execute(this::stopRadioInternal);
     }
 
@@ -53,7 +56,7 @@ public class RadioPlayer {
                 p.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ImmersiveAddon.LOGGER.error("Error while stopping radio", e);
         }
     }
 
@@ -62,5 +65,6 @@ public class RadioPlayer {
      */
     public void setGain(float volume) {
         // Volume control is unsupported in this simple implementation
+                ImmersiveAddon.LOGGER.debug("[JLayer] setGain {} (unsupported)", volume);
     }
 }
