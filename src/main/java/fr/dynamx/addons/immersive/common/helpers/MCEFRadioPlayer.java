@@ -2,15 +2,14 @@ package fr.dynamx.addons.immersive.common.helpers;
 
 import fr.dynamx.addons.immersive.ImmersiveAddon;
 import net.minecraftforge.fml.common.Loader;
-import fr.dynamx.addons.immersive.common.helpers.JLayerRadioPlayer;
 
 import java.lang.reflect.Method;
 import java.net.URL;
 
 /**
  * Radio player using the MCEF browser. It creates a tiny hidden browser for
- * each stream so players within 16 blocks can hear the audio. If MCEF isn't
- * present the addon falls back to the {@link JLayerRadioPlayer}.
+ * each stream so players within 16 blocks can hear the audio. If the MCEF mod
+ * isn't installed radio playback is disabled.
  */
 public class MCEFRadioPlayer implements IRadioPlayer {
     private Object browser;
@@ -24,10 +23,8 @@ public class MCEFRadioPlayer implements IRadioPlayer {
 
     @Override
     public void playRadio(URL radioUrl) {
-        if(!available()) {
+        if (!available()) {
             ImmersiveAddon.LOGGER.warn("[MCEF] mod not installed; radio disabled");
-            ImmersiveAddon.radioPlayer = new JLayerRadioPlayer();
-            ImmersiveAddon.radioPlayer.playRadio(radioUrl);
             return;
         }
         stopRadio();
@@ -46,12 +43,20 @@ public class MCEFRadioPlayer implements IRadioPlayer {
     @Override
     public void stopRadio() {
         ImmersiveAddon.LOGGER.info("[MCEF] stopRadio");
-        if(browser != null) {
-            try {
-                Method close = browser.getClass().getMethod("close");
-                close.invoke(browser);
-            } catch (Throwable t) {
-                ImmersiveAddon.LOGGER.error("[MCEF] Error closing browser", t);
+        if (browser != null) {
+            Object obj = browser;
+            Runnable closer = () -> {
+                try {
+                    Method close = obj.getClass().getMethod("close");
+                    close.invoke(obj);
+                } catch (Throwable t) {
+                    ImmersiveAddon.LOGGER.error("[MCEF] Error closing browser", t);
+                }
+            };
+            if (net.minecraftforge.fml.common.FMLCommonHandler.instance().getSide().isClient()) {
+                net.minecraft.client.Minecraft.getMinecraft().addScheduledTask(closer);
+            } else {
+                closer.run();
             }
             browser = null;
         }

@@ -33,6 +33,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.world.GameType;
+import net.minecraft.util.SoundCategory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -140,10 +141,16 @@ public class ClientEventHandler {
         });
     }
 
-
-
-
-
+    /**
+     * Update radio playback each tick so the stream stops when leaving range even
+     * if the vehicle unloads.
+     */
+    @SubscribeEvent
+    public void tickRadio(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            RadioModule.tickActive();
+        }
+    }
     // The GUI is opened server‑side via PacketOpenVehicleParts. Opening it
     // directly on the client caused desynchronization with the container,
     // preventing inventory changes from being saved. The following handler was

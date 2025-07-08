@@ -9,7 +9,6 @@ import fr.dynamx.addons.immersive.common.GuiHandler;
 import fr.dynamx.addons.immersive.common.items.RegisterHandler;
 import fr.dynamx.addons.immersive.common.items.SoundRegister;
 import fr.dynamx.addons.immersive.common.helpers.IRadioPlayer;
-import fr.dynamx.addons.immersive.common.helpers.JLayerRadioPlayer;
 import fr.dynamx.addons.immersive.common.helpers.MCEFRadioPlayer;
 import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
 import fr.dynamx.addons.immersive.proxy.CommonProxy;
@@ -43,8 +42,8 @@ public class ImmersiveAddon {
     @SidedProxy(modId = ID, clientSide = "fr.dynamx.addons.immersive.proxy.ClientProxy", serverSide = "fr.dynamx.addons.immersive.proxy.ServerProxy")
     public static CommonProxy proxy;
     /**
-     * Active radio player implementation. Defaults to the JLayer based player
-     * but will use the WebDisplays backend when the MCEF mod is available.
+     * Active radio player implementation. Uses the MCEF browser when the mod is
+     * installed; radio features are disabled otherwise.
      */
     public static IRadioPlayer radioPlayer;
 
@@ -56,13 +55,13 @@ public class ImmersiveAddon {
     public void onPreInit(FMLPreInitializationEvent event) {
         ImmersiveAddonConfig.init(event.getSuggestedConfigurationFile());
         proxy.preInit(event);
-        if(event.getSide().isClient()) {
-            if(Loader.isModLoaded("mcef")) {
+        if (event.getSide().isClient()) {
+            if (Loader.isModLoaded("mcef")) {
                 LOGGER.info("Using MCEF based radio player");
                 radioPlayer = new MCEFRadioPlayer();
             } else {
-                LOGGER.info("Using JLayer based radio player");
-                radioPlayer = new JLayerRadioPlayer();
+                LOGGER.warn("MCEF not installed; radio disabled");
+                radioPlayer = null;
             }
         } else {
             LOGGER.info("Pre-initializing on dedicated server");
