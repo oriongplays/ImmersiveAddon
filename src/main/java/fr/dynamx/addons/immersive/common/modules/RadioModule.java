@@ -127,88 +127,101 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
         }
     }
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void updateEntity() {
-        if (!FMLCommonHandler.instance().getSide().isClient() || !entity.world.isRemote)
-            return;
+@Override
+@SideOnly(Side.CLIENT)
+public void updateEntity() {
+    if (!FMLCommonHandler.instance().getSide().isClient() || !entity.world.isRemote)
+        return;
 
-        double distSq = entity.getDistanceSq(Minecraft.getMinecraft().player);
-        if (distSq > 256) {
-            if (cachedRadioOn) {
-                ImmersiveAddon.LOGGER.debug("Player too far from {} - stopping radio", entity.getName());
-                ImmersiveAddon.radioPlayer.stopRadio();
-                resetCached();
-            }
+    double distSq = entity.getDistanceSq(Minecraft.getMinecraft().player);
+    if (distSq > 256) {
+        if (cachedRadioOn) {
+            ImmersiveAddon.LOGGER.debug("Player too far from {} - stopping radio", entity.getName());
+            ImmersiveAddon.radioPlayer.stopRadio();
+            resetCached();
+        }
+        if (activeModule == this) {
+            clearActive();
+        }
+        return;
+    }
+
+    // Ensure this module is active if the radio is on
+    if (isRadioOn) {
+        if (activeModule != this) {
+            clearActive();
+            activeModule = this;
+        }
+        activePos = entity.getPositionVector();
+    } else if (activeModule == this) {
+        clearActive();
+    }
+
+    // Update volume based on distance
+    if (ImmersiveAddon.radioPlayer != null) {
+        float base = Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.MUSIC);
+        float distGain = 1.0f - (float) Math.sqrt(distSq) / 16f;
+        if (distGain < 0f) distGain = 0f;
+        ImmersiveAddon.radioPlayer.setGain(base * distGain);
+    } else {
+        return;
+    }
+
+    // Make sure seats module is present
+    SeatsModule seatsModule = entity.getModuleByType(SeatsModule.class);
+    if (seatsModule == null)
+        return;
+
+    // Prevent duplicated startRadio() calls in the same tick
+    boolean shouldStartRadio = false;
+
+    if (cachedRadioOn != isRadioOn) {
+        cachedRadioOn = isRadioOn;
+        if (isRadioOn) {
+            shouldStartRadio = true;
+        } else {
+            Minecraft.getMinecraft().player.sendStatusMessage(
+                    new net.minecraft.util.text.TextComponentString("§c§lRadio: §r§eRadio is off"), true);
+            ImmersiveAddon.LOGGER.debug("Stopping radio for {}", entity.getName());
+            ImmersiveAddon.radioPlayer.stopRadio();
+            resetCached();
             if (activeModule == this) {
                 clearActive();
             }
-            return;
         }
+    }
 
+    if (cachedRadioIndex != getCurrentRadioIndex()) {
+        cachedRadioIndex = getCurrentRadioIndex();
         if (isRadioOn) {
-            if (activeModule != this) {
-                clearActive();
-                activeModule = this;
-            }
+            shouldStartRadio = true;
+        }
+    }
+
+    if (shouldStartRadio) {
+        startRadio();
+    }
+}
+@SideOnly(Side.CLIENT)
+private void startRadio() {
+    if (ConfigReader.frequencies != null && !ConfigReader.frequencies.isEmpty()) {
+        int idx = Math.min(Math.max(getCurrentRadioIndex(), 0), ConfigReader.frequencies.size() - 1);
+        Minecraft.getMinecraft().player.sendStatusMessage(
+                new net.minecraft.util.text.TextComponentString("§c§lRadio: §r§e" +
+                        ConfigReader.frequencies.get(idx).getName()), true);
+        try {
+            // Always stop any existing playback to prevent duplicate audio
+            ImmersiveAddon.radioPlayer.stopRadio();
+
+            ImmersiveAddon.LOGGER.debug("Starting radio {} for {}", idx, entity.getName());
+            ImmersiveAddon.radioPlayer.playRadio(new URL(ConfigReader.frequencies.get(idx).getUrl()));
+            activeModule = this;
             activePos = entity.getPositionVector();
-        } else if (activeModule == this) {
-            clearActive();
-        }
-
-        if (ImmersiveAddon.radioPlayer != null) {
-            float base = Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.MUSIC);
-            float distGain = 1.0f - (float) Math.sqrt(distSq) / 16f;
-            if (distGain < 0f) distGain = 0f;
-            ImmersiveAddon.radioPlayer.setGain(base * distGain);
-        } else {
-            return;
-        }
-
-        SeatsModule seatsModule = entity.getModuleByType(SeatsModule.class);
-        if (seatsModule == null)
-            return;
-
-        if (cachedRadioOn != isRadioOn) {
-            cachedRadioOn = isRadioOn;
-            if (isRadioOn) {
-                startRadio();
-            } else {
-                Minecraft.getMinecraft().player.sendStatusMessage(
-                        new net.minecraft.util.text.TextComponentString("§c§lRadio: §r§eRadio is off"), true);
-                ImmersiveAddon.LOGGER.debug("Stopping radio for {}", entity.getName());
-                ImmersiveAddon.radioPlayer.stopRadio();
-                resetCached();
-                if (activeModule == this) {
-                    clearActive();
-                }
-            }
-        }
-        if (cachedRadioIndex != getCurrentRadioIndex()) {
-            cachedRadioIndex = getCurrentRadioIndex();
-            if (isRadioOn) {
-                startRadio();
-            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
     }
-
-    @SideOnly(Side.CLIENT)
-    private void startRadio() {
-        if (ConfigReader.frequencies != null && !ConfigReader.frequencies.isEmpty()) {
-            int idx = Math.min(Math.max(getCurrentRadioIndex(), 0), ConfigReader.frequencies.size() - 1);
-            Minecraft.getMinecraft().player.sendStatusMessage(
-                    new net.minecraft.util.text.TextComponentString("§c§lRadio: §r§e" +
-                            ConfigReader.frequencies.get(idx).getName()), true);
-            try {
-                ImmersiveAddon.LOGGER.debug("Starting radio {} for {}", idx, entity.getName());
-                ImmersiveAddon.radioPlayer.playRadio(new URL(ConfigReader.frequencies.get(idx).getUrl()));
-                activeModule = this;
-                activePos = entity.getPositionVector();
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
+}
 
     @Nullable
     @Override
