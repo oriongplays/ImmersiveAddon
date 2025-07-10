@@ -33,9 +33,6 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
     @SideOnly(Side.CLIENT)
     private static RadioModule activeModule;
 
-    /** Last known position of the active module. */
-    @SideOnly(Side.CLIENT)
-    private static net.minecraft.util.math.Vec3d activePos;
 
     /**
      * @return the radio module currently playing, or {@code null} if none.
@@ -56,12 +53,11 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
             activeModule.resetCached();
         }
         activeModule = null;
-        activePos = null;
     }
 
     /**
-     * Update the active radio each client tick to handle distance checks even
-     * when the vehicle unloads.
+     * Update the active radio each client tick so playback stops if the player
+     * leaves the vehicle or it unloads.
      */
     @SideOnly(Side.CLIENT)
     public static void tickActive() {
@@ -79,22 +75,15 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
             return;
         }
 
-        activePos = ent.getPositionVector();
-        double distSq = mc.player.getDistanceSq(activePos.x, activePos.y, activePos.z);
-        if (distSq > 256) {
-            ImmersiveAddon.LOGGER.debug("Player too far from {} - stopping radio", ent.getName());
-            ImmersiveAddon.radioPlayer.stopRadio();
-            activeModule.resetCached();
+        // Stop playback if the player left the vehicle
+        if (!ent.getPassengers().contains(mc.player)) {
             clearActive();
             return;
         }
 
-        // Update volume fade with distance
         if (ImmersiveAddon.radioPlayer != null) {
             float base = mc.gameSettings.getSoundLevel(SoundCategory.MUSIC);
-            float distGain = 1.0f - (float) Math.sqrt(distSq) / 16f;
-            if (distGain < 0f) distGain = 0f;
-            ImmersiveAddon.radioPlayer.setGain(base * distGain);
+            ImmersiveAddon.radioPlayer.setGain(base);
         }
     }
 
@@ -133,10 +122,14 @@ public void updateEntity() {
     if (!FMLCommonHandler.instance().getSide().isClient() || !entity.world.isRemote)
         return;
 
-    double distSq = entity.getDistanceSq(Minecraft.getMinecraft().player);
-    if (distSq > 256) {
+    net.minecraft.client.entity.EntityPlayerSP player = Minecraft.getMinecraft().player;
+    if (player == null)
+        return;
+
+    boolean inVehicle = entity.getPassengers().contains(player);
+    if (!inVehicle) {
         if (cachedRadioOn) {
-            ImmersiveAddon.LOGGER.debug("Player too far from {} - stopping radio", entity.getName());
+            ImmersiveAddon.LOGGER.debug("Player left {} - stopping radio", entity.getName());
             ImmersiveAddon.radioPlayer.stopRadio();
             resetCached();
         }
@@ -152,17 +145,14 @@ public void updateEntity() {
             clearActive();
             activeModule = this;
         }
-        activePos = entity.getPositionVector();
+        // Ensure gain is consistent while inside the vehicle
     } else if (activeModule == this) {
         clearActive();
     }
 
-    // Update volume based on distance
     if (ImmersiveAddon.radioPlayer != null) {
         float base = Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.MUSIC);
-        float distGain = 1.0f - (float) Math.sqrt(distSq) / 16f;
-        if (distGain < 0f) distGain = 0f;
-        ImmersiveAddon.radioPlayer.setGain(base * distGain);
+        ImmersiveAddon.radioPlayer.setGain(base);
     } else {
         return;
     }
@@ -216,7 +206,6 @@ private void startRadio() {
             ImmersiveAddon.LOGGER.debug("Starting radio {} for {}", idx, entity.getName());
             ImmersiveAddon.radioPlayer.playRadio(new URL(ConfigReader.frequencies.get(idx).getUrl()));
             activeModule = this;
-            activePos = entity.getPositionVector();
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

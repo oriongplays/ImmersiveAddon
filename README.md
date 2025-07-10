@@ -12,11 +12,11 @@ This addon adds new features to DynamX :
 - Engine upgrades via `/immersiveaddon mec vehicle engine <level> <player>` command
 - Web radio playback requires the MCEF mod
   (https://github.com/montoyo/mcef). When WebDisplays is present, the stream is
-  played through an invisible screen so anyone within 16 blocks of the vehicle
-  hears it. Each vehicle spawns its own hidden browser on the client. Volume
-  follows the Minecraft music slider and fades with distance. The stream stops
-  when leaving a 16‑block radius or disconnecting from the server. Enable debug
-  mode in the config to print playback details in the console. The official
+  played through an invisible screen but only the driver and passengers hear it.
+  Each vehicle spawns its own hidden browser on the client. Volume follows the
+  Minecraft music slider. The stream stops when leaving the vehicle or
+  disconnecting from the server. Enable debug mode in the config to print
+  playback details in the console. The official
   WebDisplays release for Minecraft 1.12.2 does not provide the
   `montoyo.webdisplays.api.ScreenHelper` class, so only the local MCEF playback
   works with that version.

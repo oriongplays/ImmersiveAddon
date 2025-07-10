@@ -142,8 +142,8 @@ public class ClientEventHandler {
     }
 
     /**
-     * Update radio playback each tick so the stream stops when leaving range even
-     * if the vehicle unloads.
+     * Update radio playback each tick so the stream stops when leaving the
+     * vehicle even if it unloads.
      */
     @SubscribeEvent
     public void tickRadio(TickEvent.ClientTickEvent event) {
