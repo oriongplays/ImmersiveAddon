@@ -7,7 +7,11 @@ import fr.dynamx.addons.immersive.ImmersiveAddonConfig;
 import fr.dynamx.addons.immersive.common.infos.RadioAddonInfos;
 import fr.dynamx.api.entities.modules.IPhysicsModule;
 import fr.dynamx.api.entities.modules.IVehicleController;
+import fr.dynamx.api.network.sync.EntityVariable;
+import fr.dynamx.api.network.sync.SynchronizationRules;
 import fr.dynamx.api.network.sync.SynchronizedEntityVariable;
+import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
+import fr.dynamx.addons.immersive.common.network.packets.PacketUpdateRadioState;
 import fr.dynamx.common.entities.BaseVehicleEntity;
 import fr.dynamx.common.entities.modules.SeatsModule;
 import fr.dynamx.common.physics.entities.AbstractEntityPhysicsHandler;
@@ -89,8 +93,11 @@ public class RadioModule implements IPhysicsModule<AbstractEntityPhysicsHandler<
 
     private final RadioAddonInfos infos;
 
-    private int currentRadioIndex = 0;
-    private boolean isRadioOn;
+    @SynchronizedEntityVariable(name = "currentRadioIndex")
+    private final EntityVariable<Integer> currentRadioIndex = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, 0);
+
+    @SynchronizedEntityVariable(name = "isRadioOn")
+    private final EntityVariable<Boolean> isRadioOn = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, false);
 
     public RadioModule(BaseVehicleEntity<?> entity, RadioAddonInfos<?> infos) {
         this.entity = entity;
@@ -140,7 +147,7 @@ public void updateEntity() {
     }
 
     // Ensure this module is active if the radio is on
-    if (isRadioOn) {
+    if (isRadioOn.get()) {
         if (activeModule != this) {
             clearActive();
             activeModule = this;
@@ -165,9 +172,9 @@ public void updateEntity() {
     // Prevent duplicated startRadio() calls in the same tick
     boolean shouldStartRadio = false;
 
-    if (cachedRadioOn != isRadioOn) {
-        cachedRadioOn = isRadioOn;
-        if (isRadioOn) {
+    if (cachedRadioOn != isRadioOn.get()) {
+        cachedRadioOn = isRadioOn.get();
+        if (isRadioOn.get()) {
             shouldStartRadio = true;
         } else {
             Minecraft.getMinecraft().player.sendStatusMessage(
@@ -183,7 +190,7 @@ public void updateEntity() {
 
     if (cachedRadioIndex != getCurrentRadioIndex()) {
         cachedRadioIndex = getCurrentRadioIndex();
-        if (isRadioOn) {
+        if (isRadioOn.get()) {
             shouldStartRadio = true;
         }
     }
@@ -220,19 +227,27 @@ private void startRadio() {
     }
 
     public int getCurrentRadioIndex() {
-        return currentRadioIndex;
+        return currentRadioIndex.get();
     }
 
     public void setCurrentRadioIndex(int currentRadioIndex) {
-        this.currentRadioIndex = currentRadioIndex;
+        this.currentRadioIndex.set(currentRadioIndex);
+        if (entity.world != null && entity.world.isRemote) {
+            ImmersiveAddonPacketHandler.getInstance().getNetwork().sendToServer(
+                    new PacketUpdateRadioState(entity.getEntityId(), currentRadioIndex, isRadioOn.get()));
+        }
     }
 
     public boolean isRadioOn() {
-        return isRadioOn;
+        return isRadioOn.get();
     }
 
     public void setRadioOn(boolean radioOn) {
-        isRadioOn = radioOn;
+        this.isRadioOn.set(radioOn);
+        if (entity.world != null && entity.world.isRemote) {
+            ImmersiveAddonPacketHandler.getInstance().getNetwork().sendToServer(
+                    new PacketUpdateRadioState(entity.getEntityId(), currentRadioIndex.get(), radioOn));
+        }
     }
 
     public RadioAddonInfos getInfos() {
@@ -241,13 +256,13 @@ private void startRadio() {
 
     @Override
     public void writeToNBT(NBTTagCompound tag) {
-        tag.setInteger("currentRadioIndex", currentRadioIndex);
-        tag.setBoolean("isRadioOn", isRadioOn);
+        tag.setInteger("currentRadioIndex", currentRadioIndex.get());
+        tag.setBoolean("isRadioOn", isRadioOn.get());
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        currentRadioIndex = tag.getInteger("currentRadioIndex");
-        isRadioOn = tag.getBoolean("isRadioOn");
+        currentRadioIndex.set(tag.getInteger("currentRadioIndex"));
+        isRadioOn.set(tag.getBoolean("isRadioOn"));
     }
 }

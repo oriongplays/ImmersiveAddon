@@ -15,23 +15,23 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
     private final BaseVehicleEntity<?> entity;
 
     @SynchronizedEntityVariable(name = "front_bumper")
-    private final EntityVariable<String> frontBumper = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    private final EntityVariable<String> frontBumper = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "front_bumper_original");
     @SynchronizedEntityVariable(name = "rear_bumper")
-    private final EntityVariable<String> rearBumper = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    private final EntityVariable<String> rearBumper = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "rear_bumper_original");
     @SynchronizedEntityVariable(name = "hood")
-    private final EntityVariable<String> hood = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    private final EntityVariable<String> hood = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "hood_original");
     @SynchronizedEntityVariable(name = "spoiler")
-    private final EntityVariable<String> spoiler = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    private final EntityVariable<String> spoiler = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "spoiler_original");
     @SynchronizedEntityVariable(name = "roof")
-    private final EntityVariable<String> roof = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    private final EntityVariable<String> roof = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "roof_original");
     @SynchronizedEntityVariable(name = "side_skirt")
-    private final EntityVariable<String> sideSkirt = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    private final EntityVariable<String> sideSkirt = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "side_skirt_original");
     @SynchronizedEntityVariable(name = "accessory")
-    private final EntityVariable<String> accessory = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    private final EntityVariable<String> accessory = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "accessory_original");
     @SynchronizedEntityVariable(name = "sound")
-    private final EntityVariable<String> sound = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    private final EntityVariable<String> sound = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "sound_original");
     @SynchronizedEntityVariable(name = "neon")
-    private final EntityVariable<String> neon = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "");
+    private final EntityVariable<String> neon = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "neon_original");
 
     public VehicleCustomizationModule(BaseVehicleEntity<?> entity) {
         this.entity = entity;
@@ -112,14 +112,23 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        frontBumper.set(tag.getString("front_bumper"));
-        rearBumper.set(tag.getString("rear_bumper"));
-        hood.set(tag.getString("hood"));
-        spoiler.set(tag.getString("spoiler"));
-        roof.set(tag.getString("roof"));
-        sideSkirt.set(tag.getString("side_skirt"));
-        accessory.set(tag.getString("accessory"));
-        sound.set(tag.getString("sound"));
-        neon.set(tag.getString("neon"));
+        if(tag.hasKey("front_bumper"))
+            frontBumper.set(tag.getString("front_bumper"));
+        if(tag.hasKey("rear_bumper"))
+            rearBumper.set(tag.getString("rear_bumper"));
+        if(tag.hasKey("hood"))
+            hood.set(tag.getString("hood"));
+        if(tag.hasKey("spoiler"))
+            spoiler.set(tag.getString("spoiler"));
+        if(tag.hasKey("roof"))
+            roof.set(tag.getString("roof"));
+        if(tag.hasKey("side_skirt"))
+            sideSkirt.set(tag.getString("side_skirt"));
+        if(tag.hasKey("accessory"))
+            accessory.set(tag.getString("accessory"));
+        if(tag.hasKey("sound"))
+            sound.set(tag.getString("sound"));
+        if(tag.hasKey("neon"))
+            neon.set(tag.getString("neon"));
     }
 }

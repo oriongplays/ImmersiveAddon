@@ -32,15 +32,16 @@ public class VehiclePartRenderHandler {
         if(currentEntity == null)
             return;
         String name = event.getObjObjectRenderer().getObjObjectData().getName();
-        if(!name.startsWith("custom_slotdoveiculo_"))
+        final String prefix = "custom_";
+        if(!name.startsWith(prefix))
             return;
         VehicleCustomizationModule module = currentEntity.getModuleByType(VehicleCustomizationModule.class);
         if(module == null)
             return;
-        String slot = name.substring("custom_slotdoveiculo_".length());
-        String baseSlot = slot.contains("_") ? slot.substring(0, slot.indexOf('_')) : slot;
+        String slotInfo = name.substring(prefix.length());
+        String baseSlot = slotInfo.contains("_") ? slotInfo.substring(0, slotInfo.indexOf('_')) : slotInfo;
         String installed = module.getPart(baseSlot);
-        if(installed.isEmpty() || !slot.startsWith(installed)) {
+        if(installed.isEmpty() || !slotInfo.equals(installed)) {
             event.setCanceled(true);
         }
     }
