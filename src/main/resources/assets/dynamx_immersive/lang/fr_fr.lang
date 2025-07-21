@@ -15,3 +15,5 @@ item.scanner.name=Scanner
 gui.vehicle_parts.title=Pièces de véhicule
 gui.vehicle_storage.title=Inventaire du véhicule
 key.vehicle_parts=Inventaire du véhicule
+key.vehicle_health=Santé du véhicule
+key.wheel_health=Santé de la roue

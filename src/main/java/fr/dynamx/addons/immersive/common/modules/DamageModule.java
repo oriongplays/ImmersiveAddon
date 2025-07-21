@@ -28,6 +28,7 @@ public class DamageModule implements IPhysicsModule<AbstractEntityPhysicsHandler
     private final PackPhysicsEntity<?, ?> entity;
 
 
+
     @SynchronizedEntityVariable(name = "damage")
     private final EntityVariable<Float> damage = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, 0.0F);
     @SynchronizedEntityVariable(name = "lastDamage")
@@ -118,4 +119,5 @@ public class DamageModule implements IPhysicsModule<AbstractEntityPhysicsHandler
             }
         }
     }
+
 }

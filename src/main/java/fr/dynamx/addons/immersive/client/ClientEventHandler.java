@@ -10,6 +10,8 @@ import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleParts;
 import fr.dynamx.addons.immersive.common.items.ItemsRegister;
 import fr.dynamx.addons.immersive.client.KeyVehicleInventory;
 import fr.dynamx.addons.immersive.client.KeyRadio;
+import fr.dynamx.addons.immersive.client.KeyVehicleHealth;
+import fr.dynamx.addons.immersive.client.KeyWheelHealth;
 import fr.dynamx.addons.immersive.client.GuiRadio;
 import fr.dynamx.addons.immersive.common.modules.DamageModule;
 import fr.dynamx.addons.immersive.common.modules.RadioModule;
@@ -26,6 +28,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
+import fr.dynamx.utils.DynamXUtils;
+import fr.dynamx.utils.physics.PhysicsRaycastResult;
+import fr.dynamx.api.physics.BulletShapeType;
+import fr.dynamx.api.physics.EnumBulletShapeType;
+import fr.dynamx.addons.immersive.common.modules.WheelHealthModule;
+import fr.dynamx.common.entities.modules.WheelsModule;
+import fr.dynamx.common.physics.entities.modules.WheelsPhysicsHandler;
+import fr.dynamx.common.physics.entities.parts.wheel.WheelPhysics;
+import com.jme3.math.Vector3f;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -94,7 +105,19 @@ public class ClientEventHandler {
             }
         }
     }
-
+    @SubscribeEvent
+    public void handleHealthKey(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END)
+            return;
+        if (mc.player != null) {
+            if (KeyVehicleHealth.SHOW_HEALTH != null && KeyVehicleHealth.SHOW_HEALTH.isPressed()) {
+                displayVehicleHealth(mc.player);
+            }
+            if (KeyWheelHealth.SHOW_WHEEL_HEALTH != null && KeyWheelHealth.SHOW_WHEEL_HEALTH.isPressed()) {
+                displayWheelHealth(mc.player);
+            }
+        }
+    }
 
 
     @SubscribeEvent
@@ -151,6 +174,7 @@ public class ClientEventHandler {
             RadioModule.tickActive();
         }
     }
+
     // The GUI is opened server‑side via PacketOpenVehicleParts. Opening it
     // directly on the client caused desynchronization with the container,
     // preventing inventory changes from being saved. The following handler was
@@ -182,6 +206,7 @@ public class ClientEventHandler {
             event.setCanceled(true);
         }
     }
+
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onPlayerJump(LivingEvent.LivingJumpEvent e) {
@@ -215,6 +240,78 @@ public class ClientEventHandler {
             if (!mc.player.isCreative() && !mc.player.isSpectator() && !showNames) {
                 event.setCanceled(true);
             }
+        }
+    }
+    
+    @SideOnly(Side.CLIENT)
+    private void displayVehicleHealth(EntityPlayer player) {
+        if (player.getRidingEntity() instanceof BaseVehicleEntity) {
+            BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) player.getRidingEntity();
+            DamageModule dmg = vehicle.getModuleByType(DamageModule.class);
+            if (dmg != null) {
+                float health = 100f - dmg.getDamage();
+                player.sendStatusMessage(new net.minecraft.util.text.TextComponentString(String.format("%.0f/100", health)), true);
+            }
+            return;
+        }
+
+                java.util.function.Predicate<EnumBulletShapeType> pred = t -> !t.isPlayer();
+        PhysicsRaycastResult result = DynamXUtils.castRayFromEntity(player, 5f, pred);
+        if (result == null)
+            return;
+
+        BulletShapeType<?> shape = (BulletShapeType<?>) result.hitBody.getUserObject();
+        if (!shape.getType().isBulletEntity() || !(shape.getObjectIn() instanceof BaseVehicleEntity))
+            return;
+
+        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) shape.getObjectIn();
+        DamageModule dmg = vehicle.getModuleByType(DamageModule.class);
+        if (dmg != null) {
+            float health = 100f - dmg.getDamage();
+            player.sendStatusMessage(new net.minecraft.util.text.TextComponentString(String.format("%.0f/100", health)), true);
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void displayWheelHealth(EntityPlayer player) {
+
+        java.util.function.Predicate<EnumBulletShapeType> pred = t -> !t.isPlayer();
+        PhysicsRaycastResult result = DynamXUtils.castRayFromEntity(player, 5f, pred);
+        if (result == null)
+            return;
+
+        BulletShapeType<?> shape = (BulletShapeType<?>) result.hitBody.getUserObject();
+        if (!shape.getType().isBulletEntity() || !(shape.getObjectIn() instanceof BaseVehicleEntity))
+            return;
+
+        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) shape.getObjectIn();
+        WheelsModule wheels = vehicle.getModuleByType(WheelsModule.class);
+        WheelHealthModule wheelHealth = vehicle.getModuleByType(WheelHealthModule.class);
+        if (wheels == null || wheelHealth == null)
+            return;
+
+        WheelsPhysicsHandler handler = wheels.getPhysicsHandler();
+        if (handler == null)
+            return;
+
+        Vector3f hit = result.hitPos;
+        float best = Float.MAX_VALUE;
+        int idx = -1;
+        for (int i = 0; i < handler.getNumWheels(); i++) {
+            WheelPhysics w = handler.getWheel(i);
+            if (w != null) {
+                Vector3f wp = w.getPhysicsWheel().getWheelWorldLocation(new Vector3f());
+                float dist = wp.distance(hit);
+                if (dist < best) {
+                    best = dist;
+                    idx = i;
+                }
+            }
+        }
+
+        if (idx >= 0 && best < 1.5f) {
+            float health = wheelHealth.getHealth(idx);
+            player.sendStatusMessage(new net.minecraft.util.text.TextComponentString(String.format("%.0f/100", health)), true);
         }
     }
 }
