@@ -172,6 +172,7 @@ public class ItemTreuil extends Item {
                         } else {
                             DynamXContext.getPhysicsWorld(player.world).schedule(() -> JointHandlerRegistry.createJointWithSelf(MovableModule.JOINT_NAME, containedEntity, (byte)2));
                         }
+                        TreuilHandler.register((PhysicsEntity) shapeType.getObjectIn(), containedEntity, player);
                         sendChatMessage(player, "Véhicule accroché");
                         removeEntity(itemStack);
                     }

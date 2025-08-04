@@ -8,7 +8,14 @@ import fr.dynamx.api.contentpack.registry.RegisteredSubInfoType;
 import fr.dynamx.api.contentpack.registry.SubInfoTypeRegistries;
 import fr.dynamx.common.contentpack.type.vehicle.ModularVehicleInfo;
 
-@RegisteredSubInfoType(name = "PesoDeVeiculo", registries = {SubInfoTypeRegistries.WHEELED_VEHICLES, SubInfoTypeRegistries.HELICOPTER, SubInfoTypeRegistries.BOATS}, strictName = false)
+@RegisteredSubInfoType(
+        name = "WeightTypeInfo",
+        registries = {
+            SubInfoTypeRegistries.WHEELED_VEHICLES,
+            SubInfoTypeRegistries.HELICOPTER,
+            SubInfoTypeRegistries.BOATS
+        },
+        strictName = true)
 public class PesoDeVeiculoInfo extends SubInfoType<ModularVehicleInfo> {
 
     @PackFileProperty(configNames = {"Type"}, type = DefinitionType.DynamXDefinitionTypes.STRING, required = false)

@@ -50,6 +50,8 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import com.modularwarfare.api.WeaponHitEvent;
+import fr.dynamx.addons.immersive.common.items.TreuilHandler;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 @Mod.EventBusSubscriber(modid = ImmersiveAddon.ID)
 public class ImmersiveEventHandler {
@@ -259,6 +261,13 @@ public class ImmersiveEventHandler {
                 player.addItemStackToInventory(propsEntity.getPackInfo().getPickedResult(propsEntity.getMetadata()));
                 propsEntity.setDead();
             }
+        }
+    }
+    
+        @SubscribeEvent
+    public void tickTreuils(TickEvent.WorldTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            TreuilHandler.tick(event.world);
         }
     }
     
