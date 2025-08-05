@@ -42,6 +42,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.SoundCategory;
@@ -103,7 +104,7 @@ public class ImmersiveEventHandler {
                                         player.sendMessage(new TextComponentString("Total Damage : " + damage.getPercentage()));
                                     }
                                 } else {
-                                    player.sendMessage(new TextComponentString("§4Errored car."));
+                                    player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.errored_car"));
                                 }
 
 
@@ -193,7 +194,7 @@ public class ImmersiveEventHandler {
                     if(wheelHealth != null) {
                         wheelHealth.repairWheel(id);
                     }
-                    player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Roue réparée."));
+                    player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.wheel_repaired"));
                     player.inventory.clearMatchingItems(item, -1, 1, null);
                 }
             }
@@ -204,7 +205,7 @@ public class ImmersiveEventHandler {
             DamageModule damage = event.getEntity().getModuleByType(DamageModule.class);
             if(damage != null){
                 damage.repair(ImmersiveAddonConfig.repairKitValue);
-                player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Réparation effectuée."));
+                player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.repair_done"));
                 event.setCanceled(true);
             }
         }

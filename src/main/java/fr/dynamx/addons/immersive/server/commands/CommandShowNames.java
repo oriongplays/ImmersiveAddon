@@ -9,8 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.server.permission.PermissionAPI;
 
 public class CommandShowNames extends CommandBase {
@@ -29,7 +28,7 @@ public class CommandShowNames extends CommandBase {
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (sender instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) sender;
-            player.sendMessage(new TextComponentString(TextFormatting.GREEN + "L'affichage des noms est modifié"));
+            player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.shownames_toggled"));
             ImmersiveAddonPacketHandler.getInstance().getNetwork().sendTo(new PacketShowNames(), (EntityPlayerMP) player);
         }
     }

@@ -14,6 +14,7 @@ import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
 import fr.dynamx.addons.immersive.proxy.CommonProxy;
 import fr.dynamx.addons.immersive.server.commands.CommandShowNames;
 import fr.dynamx.addons.immersive.server.commands.CommandImmersiveAddon;
+import fr.dynamx.addons.immersive.server.commands.CommandCatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import fr.dynamx.addons.immersive.utils.ModSyncedDataKeys;
@@ -103,5 +104,6 @@ public class ImmersiveAddon {
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandShowNames());
         event.registerServerCommand(new CommandImmersiveAddon());
+        event.registerServerCommand(new CommandCatch());
     }
 }

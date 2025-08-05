@@ -26,8 +26,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
@@ -75,7 +74,7 @@ public class ItemTreuil extends Item {
         if (player.isSneaking()) {
             removeEntity(player.getHeldItemMainhand());
 
-            sendChatMessage(player, "Reset de l'Item Treuil");
+            sendChatMessage(player, "chat.dynamx_immersive.treuil_reset");
         } else {
             putOnTruck(player, false);
         }
@@ -86,7 +85,7 @@ public class ItemTreuil extends Item {
         if (player.isSneaking()) {
             removeEntity(player.getHeldItemMainhand());
 
-            sendChatMessage(player, "Reset de l'Item Treuil");
+            sendChatMessage(player, "chat.dynamx_immersive.treuil_reset");
         } else {
             putOnTruck(player, true);
         }
@@ -106,11 +105,11 @@ public class ItemTreuil extends Item {
                         for (EntityJoint joint : ((PhysicsEntity)shapeType.getObjectIn()).getJointsHandler().getJoints()){
                             if(joint.getType().equals(MovableModule.JOINT_NAME) && joint.getJointId() == (byte)2){
                                 ((PhysicsEntity)shapeType.getObjectIn()).getJointsHandler().removeJointsOfType(MovableModule.JOINT_NAME, (byte)2);
-                                sendChatMessage(player, "Véhicule décroché");
+                                sendChatMessage(player, "chat.dynamx_immersive.vehicle_unhooked");
                                 return;
                             }
 
-                            sendChatMessage(player, "Aucun véhicule accroché");
+                            sendChatMessage(player, "chat.dynamx_immersive.no_vehicle_hooked");
                         }
                     }
                 }
@@ -124,33 +123,33 @@ public class ItemTreuil extends Item {
                                 movableModule.attachObjects.initObject(result.hitBody, result.hitBody.getPhysicsLocation(Vector3fPool.get()).subtractLocal(0.0F, -0.4F, 0.0F), JointEnd.A);
                                 writeEntity(itemStack, (PhysicsEntity) shapeType.getObjectIn());
 
-                                sendChatMessage(player, "Clique maintenant sur la dépanneuse");
+                                sendChatMessage(player, "chat.dynamx_immersive.click_flatbed");
                             }
                         } else {
 
-                            sendChatMessage(player, "Clique d'abord sur le véhicule à remorquer");
+                            sendChatMessage(player, "chat.dynamx_immersive.click_vehicle_first");
                         }
                     }
 
-                    else { sendChatMessage(player, "Ceci n'est pas un véhicule"); }
+                    else { sendChatMessage(player, "chat.dynamx_immersive.not_a_vehicle"); }
 
                 } else {
                     PhysicsEntity<?> containedEntity = getEntity(itemStack, player.world);
                     if (shapeType.getObjectIn() == containedEntity) {
 
-                        sendChatMessage(player, TextFormatting.RED + "● Vous devez sélectionner votre dépanneuse.");
+                        sendChatMessage(player, "chat.dynamx_immersive.select_flatbed");
 
                     } else if (!(shapeType.getObjectIn() instanceof BaseVehicleEntity) || ((ModularVehicleInfo)((BaseVehicleEntity)shapeType.getObjectIn()).getPackInfo()).getSubPropertyByType(FlatbedTruckInfo.class) == null) {
 
-                        sendChatMessage(player, TextFormatting.RED + "● Vous devez sélectionner votre dépanneuse.");
-                        sendChatMessage(player, TextFormatting.RED + "Pour réinitialiser votre selection, faites Clique Droit sur le véhicule.");
+                        sendChatMessage(player, "chat.dynamx_immersive.select_flatbed");
+                        sendChatMessage(player, "chat.dynamx_immersive.reset_instruction");
 
                     }else if(containedEntity.getDistance(((BaseVehicleEntity) shapeType.getObjectIn())) > 30){
 
-                        sendChatMessage(player, TextFormatting.RED + "● Le véhicule est trop loin de votre dépanneuse.");
+                        sendChatMessage(player, "chat.dynamx_immersive.vehicle_too_far");
 
                         removeEntity(player.getHeldItemMainhand());
-                        sendChatMessage(player, "Reset de l'Item Treuil");
+                        sendChatMessage(player, "chat.dynamx_immersive.treuil_reset");
                     } else if (containedEntity != null) {
                         if (MinecraftForge.EVENT_BUS.post(new PutOnFlatbedTruckEvent.PutVehicleOnFlatbedEvent((BaseVehicleEntity)shapeType.getObjectIn(), containedEntity, itemStack))) {
                             return;
@@ -165,7 +164,7 @@ public class ItemTreuil extends Item {
                         if (!shapeType.getType().isTerrain()) {
                             attachObjects.initObject(result.hitBody, result.hitBody.getPhysicsLocation(Vector3fPool.get()).addLocal(offset).addLocal(Vector3fPool.get(0.0F, 0.3F, 0.0F)), JointEnd.B);
                         } else {
-                            sendChatMessage(player, "Ceci n'est pas un véhicule");
+                            sendChatMessage(player, "chat.dynamx_immersive.not_a_vehicle");
                         }
                         if (shapeType.getType().isBulletEntity()) {
                             DynamXContext.getPhysicsWorld(player.world).schedule(() -> JointHandlerRegistry.createJointWithOther(MovableModule.JOINT_NAME, containedEntity, (PhysicsEntity)shapeType.getObjectIn(), (byte)2));
@@ -173,7 +172,7 @@ public class ItemTreuil extends Item {
                             DynamXContext.getPhysicsWorld(player.world).schedule(() -> JointHandlerRegistry.createJointWithSelf(MovableModule.JOINT_NAME, containedEntity, (byte)2));
                         }
                         TreuilHandler.register((PhysicsEntity) shapeType.getObjectIn(), containedEntity, player);
-                        sendChatMessage(player, "Véhicule accroché");
+                        sendChatMessage(player, "chat.dynamx_immersive.vehicle_hooked");
                         removeEntity(itemStack);
                     }
                 }
@@ -181,9 +180,9 @@ public class ItemTreuil extends Item {
         }
     }
 
-    private void sendChatMessage(EntityPlayer player, String message){
+    private void sendChatMessage(EntityPlayer player, String key, Object... args){
         if(!player.world.isRemote){
-            player.sendMessage(new TextComponentString(message));
+            player.sendMessage(new TextComponentTranslation(key, args));
         }
     }
 }

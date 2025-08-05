@@ -3,6 +3,8 @@ package fr.dynamx.addons.immersive;
 import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 public class ImmersiveAddonConfig {
     private static Configuration configuration;
@@ -22,6 +24,8 @@ public class ImmersiveAddonConfig {
     public static int keyShowHealth;
     public static int keyShowWheelHealth;
     public static boolean debug;
+    public static List<String> denylist;
+
     public static void init(File file) {
         Configuration configuration = new Configuration(file);
         configuration.load();
@@ -41,6 +45,8 @@ public class ImmersiveAddonConfig {
         keyOpenRadio = configuration.getInt("OpenRadioKey", "ClientGeneral", 76, 1, 255, "Key code to open the radio GUI.");
         keyShowHealth = configuration.getInt("ShowHealthKey", "ClientGeneral", 72, 1, 255, "Key code to display vehicle health.");
         keyShowWheelHealth = configuration.getInt("ShowWheelHealthKey", "ClientGeneral", 73, 1, 255, "Key code to display wheel health.");
+        denylist = Arrays.asList(configuration.getStringList("dynamx_immersive_denylist", "General", new String[0], "Entities that cannot be caught with /catch. Use 'namespace:*' to deny all entities from a namespace."));
+        
         configuration.save();
     }
 }

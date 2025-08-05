@@ -7,7 +7,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.network.play.server.SPacketSoundEffect;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class TreuilHandler {
                 treuil.truck.getJointsHandler().removeJointsOfType(MovableModule.JOINT_NAME, (byte) 2);
                 treuil.vehicle.getJointsHandler().removeJointsOfType(MovableModule.JOINT_NAME, (byte) 2);
                 if (!world.isRemote && treuil.user != null) {
-                    treuil.user.sendMessage(new TextComponentString("o gancho soltou do veiculo, conecte denovo"));
+                    treuil.user.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.hook_detached"));
                     if (treuil.user instanceof EntityPlayerMP) {
                         EntityPlayerMP mp = (EntityPlayerMP) treuil.user;
                         mp.connection.sendPacket(new SPacketSoundEffect(

@@ -24,8 +24,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TextComponentTranslation;
 
 import java.util.Map;
 import java.util.function.Predicate;
@@ -187,7 +186,7 @@ public class CommandImmersiveAddon extends CommandBase {
         if(carDmg != null) {
             carDmg.removePercentage(value);
         }
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Vehicle repaired by " + value));
+        player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.vehicle_repaired_by", value));
     }
 
     private void handleLock(EntityPlayerMP player, boolean lock, ICommandSender sender) throws CommandException {
@@ -213,7 +212,7 @@ public class CommandImmersiveAddon extends CommandBase {
         } catch (Exception e) {
             throw new CommandException("Failed to lock vehicle");
         }
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + (lock ? "Vehicle locked" : "Vehicle unlocked")));
+        player.sendMessage(new TextComponentTranslation(lock ? "chat.dynamx_immersive.vehicle_locked" : "chat.dynamx_immersive.vehicle_unlocked"));
     }
 
     private void handleSetPeso(EntityPlayerMP player, String type, ICommandSender sender) throws CommandException {
@@ -234,7 +233,7 @@ public class CommandImmersiveAddon extends CommandBase {
         module.setWeightType(type);
         // Resend the physics variables so clients apply the new mass immediately
         vehicle.getSynchronizer().resyncEntity(player);
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Peso do veiculo alterado para " + type));
+        player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.vehicle_weight_set", type));
     }
 
     private void handleVehicleEngine(EntityPlayerMP player, int level, ICommandSender sender) throws CommandException {
@@ -254,7 +253,7 @@ public class CommandImmersiveAddon extends CommandBase {
         }
         module.setTuningLevel(level);
         vehicle.getSynchronizer().resyncEntity(player);
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Motor ajustado para nivel " + level));
+        player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.engine_level_set", level));
     }
     private void handleWheelModel(EntityPlayerMP player, String model, ICommandSender sender) throws CommandException {
         BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
@@ -265,7 +264,7 @@ public class CommandImmersiveAddon extends CommandBase {
         ModularVehicleInfo info = (ModularVehicleInfo) vehicle.getPackInfo();
         module.setModel("obj/" + info.getPackName() + "/" + model + ".obj");
         vehicle.getSynchronizer().resyncEntity(player);
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Wheel model updated"));
+        player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.wheel_model_updated"));
     }
 
     private void handleWheelFriction(EntityPlayerMP player, float value, ICommandSender sender) throws CommandException {
@@ -276,7 +275,7 @@ public class CommandImmersiveAddon extends CommandBase {
         }
         module.setFriction(value);
         vehicle.getSynchronizer().resyncEntity(player);
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Wheel friction updated"));
+        player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.wheel_friction_updated"));
     }
 
     private void handleWheelRestLength(EntityPlayerMP player, float value, ICommandSender sender) throws CommandException {
@@ -287,7 +286,7 @@ public class CommandImmersiveAddon extends CommandBase {
         }
         module.setRestLength(value);
         vehicle.getSynchronizer().resyncEntity(player);
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Wheel rest length updated"));
+        player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.wheel_rest_length_updated"));
     }
 
     private void handleWheelStiffness(EntityPlayerMP player, float value, ICommandSender sender) throws CommandException {
@@ -298,7 +297,7 @@ public class CommandImmersiveAddon extends CommandBase {
         }
         module.setStiffness(value);
         vehicle.getSynchronizer().resyncEntity(player);
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Wheel stiffness updated"));
+        player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.wheel_stiffness_updated"));
     }
 
     private void handleWheelParticle(EntityPlayerMP player, String particle, ICommandSender sender) throws CommandException {
@@ -309,7 +308,7 @@ public class CommandImmersiveAddon extends CommandBase {
         }
         module.setSkidParticle(particle);
         vehicle.getSynchronizer().resyncEntity(player);
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Wheel particle updated"));
+        player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.wheel_particle_updated"));
     }
 
     private BaseVehicleEntity<?> getTargetVehicle(EntityPlayerMP player) throws CommandException {
