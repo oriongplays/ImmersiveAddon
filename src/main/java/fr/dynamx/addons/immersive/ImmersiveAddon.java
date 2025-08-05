@@ -15,6 +15,7 @@ import fr.dynamx.addons.immersive.proxy.CommonProxy;
 import fr.dynamx.addons.immersive.server.commands.CommandShowNames;
 import fr.dynamx.addons.immersive.server.commands.CommandImmersiveAddon;
 import fr.dynamx.addons.immersive.server.commands.CommandCatch;
+import fr.dynamx.addons.immersive.server.commands.CommandRastreio;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import fr.dynamx.addons.immersive.utils.ModSyncedDataKeys;
@@ -105,5 +106,6 @@ public class ImmersiveAddon {
         event.registerServerCommand(new CommandShowNames());
         event.registerServerCommand(new CommandImmersiveAddon());
         event.registerServerCommand(new CommandCatch());
+        event.registerServerCommand(new CommandRastreio());
     }
 }

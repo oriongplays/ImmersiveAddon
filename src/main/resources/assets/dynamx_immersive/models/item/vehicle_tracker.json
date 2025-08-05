@@ -1,0 +1,20 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "dynamx_immersive:items/vehicle_tracker"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "angle": 0.03125
+      },
+      "model": "dynamx_immersive:item/vehicle_tracker_01"
+    },
+    {
+      "predicate": {
+        "angle": 0.0
+      },
+      "model": "dynamx_immersive:item/vehicle_tracker_00"
+    }
+  ]
+}
