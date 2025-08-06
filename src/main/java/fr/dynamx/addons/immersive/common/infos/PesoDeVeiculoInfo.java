@@ -9,11 +9,9 @@ import fr.dynamx.api.contentpack.registry.SubInfoTypeRegistries;
 import fr.dynamx.common.contentpack.type.vehicle.ModularVehicleInfo;
 
 @RegisteredSubInfoType(
-        name = "WeightTypeInfo",
+        name = "ImmersiveVehicleWeight",
         registries = {
-            SubInfoTypeRegistries.WHEELED_VEHICLES,
-            SubInfoTypeRegistries.HELICOPTER,
-            SubInfoTypeRegistries.BOATS
+            SubInfoTypeRegistries.WHEELED_VEHICLES
         },
         strictName = true)
 public class PesoDeVeiculoInfo extends SubInfoType<ModularVehicleInfo> {
