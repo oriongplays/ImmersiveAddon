@@ -35,12 +35,14 @@ import fr.dynamx.addons.immersive.common.modules.VehicleCustomizationModule;
 import fr.dynamx.addons.immersive.common.modules.VehicleStorageModule;
 import fr.dynamx.utils.DynamXUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import fr.dynamx.addons.immersive.common.modules.WheelPropertiesModule;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.event.entity.EntityMountEvent;
@@ -53,6 +55,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import com.modularwarfare.api.WeaponHitEvent;
 import fr.dynamx.addons.immersive.common.items.TreuilHandler;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = ImmersiveAddon.ID)
 public class ImmersiveEventHandler {
@@ -69,6 +72,58 @@ public class ImmersiveEventHandler {
         event.getModuleList().add(new VehicleCustomizationModule(entity));
         event.getModuleList().add(new VehicleStorageModule(entity));
   }
+  
+
+    /**
+     * Simulates vehicle run-over damage by using the driver as the collision proxy.
+     * Passengers and mounted entities are ignored.
+     */
+    @SubscribeEvent
+    public void onDriverTick(TickEvent.PlayerTickEvent event) {
+        EntityPlayer player = event.player;
+        if (player.world.isRemote || event.phase != TickEvent.Phase.END) {
+            return;
+        }
+
+        if (!player.isRiding() || !(player.getRidingEntity() instanceof BaseVehicleEntity)) {
+            return;
+        }
+
+        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) player.getRidingEntity();
+        SeatsModule seats = vehicle.getModuleByType(SeatsModule.class);
+        if (seats == null || seats.getControllingPassenger() != player) {
+            return; // Only the driver applies run-over damage
+        }
+
+        int speed = Math.round(DynamXUtils.getSpeed(vehicle));
+        if (speed <= 0) {
+            return;
+        }
+
+        AxisAlignedBB box = vehicle.getEntityBoundingBox().grow(0.5D);
+        List<Entity> nearby = vehicle.world.getEntitiesWithinAABBExcludingEntity(vehicle, box);
+        for (Entity target : nearby) {
+            if (!(target instanceof EntityLivingBase)) {
+                continue;
+            }
+            if (vehicle.getPassengers().contains(target)) {
+                continue; // ignore passengers
+            }
+            if (target.getRidingEntity() instanceof BaseVehicleEntity) {
+                continue; // ignore entities already riding vehicles
+            }
+            if (ImmersiveAddonConfig.isCollisionDenied(target)) {
+                continue;
+            }
+
+            DamageSource source = DamageSource.causeMobDamage(player);
+            target.attackEntityFrom(source, speed / 10f);
+
+            Vector3f vel = vehicle.getPhysicsHandler().getLinearVelocity();
+            target.addVelocity(vel.x * 0.2F, 0.2F, vel.z * 0.2F);
+            target.velocityChanged = true;
+        }
+    }
     @SubscribeEvent
     public void onDynxCollide(PhysicsEvent.PhysicsCollision event) {
         if(ImmersiveAddonConfig.enableCarDamage) {

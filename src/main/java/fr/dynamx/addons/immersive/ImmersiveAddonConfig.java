@@ -2,6 +2,10 @@ package fr.dynamx.addons.immersive;
 
 import net.minecraftforge.common.config.Configuration;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.util.ResourceLocation;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +29,7 @@ public class ImmersiveAddonConfig {
     public static int keyShowWheelHealth;
     public static boolean debug;
     public static List<String> denylist;
+    public static List<String> collisionDenylist;
 
     public static void init(File file) {
         Configuration configuration = new Configuration(file);
@@ -46,7 +51,35 @@ public class ImmersiveAddonConfig {
         keyShowHealth = configuration.getInt("ShowHealthKey", "ClientGeneral", 72, 1, 255, "Key code to display vehicle health.");
         keyShowWheelHealth = configuration.getInt("ShowWheelHealthKey", "ClientGeneral", 73, 1, 255, "Key code to display wheel health.");
         denylist = Arrays.asList(configuration.getStringList("dynamx_immersive_denylist", "General", new String[0], "Entities that cannot be caught with /catch. Use 'namespace:*' to deny all entities from a namespace."));
-        
+        collisionDenylist = Arrays.asList(configuration.getStringList("dynamx_immersive_collision_denylist", "General", new String[0], "Entities that ignore vehicle collision damage. Use 'namespace:*' to deny all entities from a namespace."));
+
         configuration.save();
+        
+    }
+
+    /**
+     * Checks whether the given entity is denied by the collision denylist.
+     * @param entity The entity to test
+     * @return {@code true} if the entity should be ignored
+     */
+    public static boolean isCollisionDenied(Entity entity) {
+        ResourceLocation rl = EntityList.getKey(entity);
+        if (rl == null) {
+            return true;
+        }
+        if ("dynamxmod".equals(rl.getNamespace()) && !"entity_prop".equals(rl.getPath())) {
+            return true;
+        }
+        for (String entry : collisionDenylist) {
+            if (entry.endsWith(":*")) {
+                String namespace = entry.substring(0, entry.length() - 2);
+                if (rl.getNamespace().equals(namespace)) {
+                    return true;
+                }
+            } else if (entry.equals(rl.toString())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
