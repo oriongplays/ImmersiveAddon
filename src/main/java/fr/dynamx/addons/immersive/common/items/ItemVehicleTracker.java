@@ -12,8 +12,13 @@ import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemCompass;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.relauncher.Side;
@@ -34,6 +39,7 @@ public class ItemVehicleTracker extends ItemCompass {
         setMaxStackSize(1);
         ItemsRegister.INSTANCE.getItems().add(this);
 
+        // Needle rotation toward the tracked vehicle
         this.addPropertyOverride(new ResourceLocation("angle"), new IItemPropertyGetter() {
             private double rotation;
             private double rota;
@@ -41,43 +47,60 @@ public class ItemVehicleTracker extends ItemCompass {
 
             @Override
             @SideOnly(Side.CLIENT)
-            public float apply(ItemStack stack, @Nullable World world, @Nullable EntityLivingBase entity) {
-                if (entity == null && !stack.isOnItemFrame()) {
+            public float apply(ItemStack stack, @Nullable World world, @Nullable EntityLivingBase entityIn) {
+                if (entityIn == null && !stack.isOnItemFrame()) {
                     return 0.0F;
                 }
-                boolean flag = entity != null;
-                Entity entity1 = flag ? entity : stack.getItemFrame();
+                boolean flag = entityIn != null;
+                Entity entity = flag ? entityIn : stack.getItemFrame();
                 if (world == null) {
-                    world = entity1.world;
+                    world = entity.world;
                 }
 
+                double d0;
                 Entity target = getTrackedEntity(stack, world);
-                if (target == null) {
-                    // return a value outside the 0-1 range so model overrides don't apply
+                if (target != null && target.world == world) {
+                    double yaw = flag ? entityIn.rotationYaw : ItemVehicleTracker.this.getFrameRotation((EntityItemFrame) entity);
+                    yaw = MathHelper.positiveModulo(yaw / 360.0D, 1.0D);
+                    double angle = Math.atan2(target.posZ - entity.posZ, target.posX - entity.posX) / (Math.PI * 2D);
+                    d0 = 0.5D - (yaw - 0.25D - angle);
+                } else {
+                    d0 = Math.random();
+                }
+
+                if (flag) {
+                    if (this.lastUpdate != world.getTotalWorldTime()) {
+                        this.lastUpdate = world.getTotalWorldTime();
+                        double d3 = d0 - this.rotation;
+                        d3 = MathHelper.positiveModulo(d3 + 0.5D, 1.0D) - 0.5D;
+                        this.rota += d3 * 0.1D;
+                        this.rota *= 0.8D;
+                        this.rotation = MathHelper.positiveModulo(this.rotation + this.rota, 1.0D);
+                    }
+                    return (float) this.rotation;
+                }
+                return MathHelper.positiveModulo((float) d0, 1.0F);
+            }
+        });
+
+        // Texture swap when facing the tracked vehicle
+        this.addPropertyOverride(new ResourceLocation("tracking"), new IItemPropertyGetter() {
+            @Override
+            @SideOnly(Side.CLIENT)
+            public float apply(ItemStack stack, @Nullable World world, @Nullable EntityLivingBase entityIn) {
+                if (entityIn == null) {
                     return 2.0F;
                 }
-
-                double yaw = flag ? entity1.rotationYaw : ItemVehicleTracker.this.getFrameRotation((EntityItemFrame) entity1);
-                yaw = MathHelper.positiveModulo(yaw / 360.0D, 1.0D);
-                double targetAngle = Math.atan2(target.posZ - entity1.posZ, target.posX - entity1.posX) / (Math.PI * 2D);
-                double angle = 0.5D - (yaw - 0.25D - targetAngle);
-                if (flag) {
-                    angle = wobble(world, angle);
+                if (world == null) {
+                    world = entityIn.world;
                 }
-                return MathHelper.positiveModulo((float) angle, 1.0F);
-            }
-
-            @SideOnly(Side.CLIENT)
-            private double wobble(World world, double angle) {
-                if (world.getTotalWorldTime() != this.lastUpdate) {
-                    this.lastUpdate = world.getTotalWorldTime();
-                    double d0 = angle - this.rotation;
-                    d0 = MathHelper.positiveModulo(d0 + 0.5D, 1.0D) - 0.5D;
-                    this.rota += d0 * 0.1D;
-                    this.rota *= 0.8D;
-                    this.rotation = MathHelper.positiveModulo(this.rotation + this.rota, 1.0D);
+                Entity target = getTrackedEntity(stack, world);
+                if (target != null && target.world == world) {
+                    double angle = Math.toDegrees(Math.atan2(target.posZ - entityIn.posZ, target.posX - entityIn.posX));
+                    double diff = MathHelper.wrapDegrees(entityIn.rotationYaw - angle);
+                    return Math.abs(diff) <= 15 ? 1.0F : 0.0F;
                 }
-                return this.rotation;
+                return 2.0F;
             }
         });
     }
@@ -117,6 +140,29 @@ public class ItemVehicleTracker extends ItemCompass {
             }
         }
         return null;
+    }
+
+    @Override
+    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
+        ItemStack stack = playerIn.getHeldItem(handIn);
+        if (!worldIn.isRemote) {
+            Entity target = getTrackedEntity(stack, worldIn);
+            if (target != null && target.world == playerIn.world) {
+                double distance = playerIn.getDistance(target);
+                TextFormatting color;
+                if (distance < 10) {
+                    color = TextFormatting.GREEN;
+                } else if (distance <= 50) {
+                    color = TextFormatting.YELLOW;
+                } else {
+                    color = TextFormatting.RED;
+                }
+                playerIn.sendMessage(new TextComponentString(color + Integer.toString((int) distance)));
+            } else {
+                playerIn.sendMessage(new TextComponentString("Sinal com interferencia"));
+            }
+        }
+        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
     }
 
     @Override
