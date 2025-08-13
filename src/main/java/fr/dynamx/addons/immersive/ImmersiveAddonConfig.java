@@ -4,6 +4,7 @@ import net.minecraftforge.common.config.Configuration;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import java.io.File;
@@ -63,6 +64,9 @@ public class ImmersiveAddonConfig {
      * @return {@code true} if the entity should be ignored
      */
     public static boolean isCollisionDenied(Entity entity) {
+                if (entity instanceof EntityPlayer) {
+            return false; // players should always be hittable
+        }
         ResourceLocation rl = EntityList.getKey(entity);
         if (rl == null) {
             return true;

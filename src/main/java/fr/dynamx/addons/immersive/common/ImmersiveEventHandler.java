@@ -42,6 +42,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -75,7 +76,7 @@ public class ImmersiveEventHandler {
   
 
     /**
-     * Simulates vehicle run-over damage by using the driver as the collision proxy.
+     * Simulates vehicle run-over damage by using the vehicle as the damage source.
      * Passengers and mounted entities are ignored.
      */
     @SubscribeEvent
@@ -114,13 +115,15 @@ public class ImmersiveEventHandler {
             }
             if (ImmersiveAddonConfig.isCollisionDenied(target)) {
                 continue;
-            }
+            } 
 
-            DamageSource source = DamageSource.causeMobDamage(player);
-            target.attackEntityFrom(source, speed / 10f);
+            float damage = Math.max(1.0F, speed / 10f);
+            DamageSource source = new EntityDamageSource("vehicle", vehicle).setDamageBypassesArmor();
+            target.attackEntityFrom(source, damage);
 
             Vector3f vel = vehicle.getPhysicsHandler().getLinearVelocity();
-            target.addVelocity(vel.x * 0.2F, 0.2F, vel.z * 0.2F);
+            // Reduce knockback strength so players aren't flung too far
+            target.addVelocity(vel.x * 0.05F, 0.05F, vel.z * 0.05F);
             target.velocityChanged = true;
         }
     }
