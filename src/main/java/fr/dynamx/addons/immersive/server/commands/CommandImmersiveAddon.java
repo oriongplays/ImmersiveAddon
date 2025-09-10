@@ -141,11 +141,6 @@ public class CommandImmersiveAddon extends CommandBase {
                         case "susstiffness":
                             handleWheelStiffness(target, WheelTuningHelper.clampStiff(parseFloat(value)), sender);
                             return;
-                        case "skidparticle":
-                            if(!WheelTuningHelper.isValidParticle(value))
-                                throw new CommandException("Invalid particle");
-                            handleWheelParticle(target, value, sender);
-                            return;
                         default:
                             throw new WrongUsageException(getUsage(sender));
                     }
@@ -300,16 +295,6 @@ public class CommandImmersiveAddon extends CommandBase {
         player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.wheel_stiffness_updated"));
     }
 
-    private void handleWheelParticle(EntityPlayerMP player, String particle, ICommandSender sender) throws CommandException {
-        BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
-        WheelPropertiesModule module = vehicle.getModuleByType(WheelPropertiesModule.class);
-        if(module == null) {
-            throw new CommandException("Vehicle cannot be updated");
-        }
-        module.setSkidParticle(particle);
-        vehicle.getSynchronizer().resyncEntity(player);
-        player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.wheel_particle_updated"));
-    }
 
     private BaseVehicleEntity<?> getTargetVehicle(EntityPlayerMP player) throws CommandException {
         Predicate<EnumBulletShapeType> pred = p -> !p.isPlayer();

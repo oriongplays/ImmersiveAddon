@@ -33,6 +33,7 @@ public class ItemsRegister{
     public static ItemVehiclePart NEON;
     public static Item SCANNER;
     public static Item VEHICLE_TRACKER;
+    public static Item LOCKPICK;
 
     public void init()
     {
@@ -52,6 +53,7 @@ public class ItemsRegister{
         NEON = new ItemVehiclePart("neon", "neon");
         SCANNER = new ItemScanner("scanner");
         VEHICLE_TRACKER = new ItemVehicleTracker("vehicle_tracker");
+        LOCKPICK = new ItemLockpick("lockpick");
     }
 
 

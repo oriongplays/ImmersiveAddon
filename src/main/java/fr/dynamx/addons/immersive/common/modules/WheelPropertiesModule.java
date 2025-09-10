@@ -88,6 +88,10 @@ public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysi
         apply();
     }
 
+        public String getSkidParticle() {
+        return skidParticle.get();
+    }
+    
     private void updateInfo(PartWheelInfo info) {
         try {
             Field f;

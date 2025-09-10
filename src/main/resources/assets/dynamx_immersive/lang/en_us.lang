@@ -13,6 +13,7 @@ item.sound.name=Sound System
 item.neon.name=Neon Kit
 item.scanner.name=Scanner
 item.vehicle_tracker.name=Vehicle Tracker
+item.lockpick.name=Lockpick
 gui.vehicle_parts.title=Vehicle Parts
 gui.vehicle_storage.title=Vehicle Inventory
 key.vehicle_parts=Vehicle Parts Inventory

@@ -33,6 +33,7 @@ import fr.dynamx.addons.immersive.common.modules.VehiclePropertiesModule;
 import fr.dynamx.addons.immersive.common.modules.EngineTuningModule;
 import fr.dynamx.addons.immersive.common.modules.VehicleCustomizationModule;
 import fr.dynamx.addons.immersive.common.modules.VehicleStorageModule;
+import fr.dynamx.addons.immersive.common.helpers.WheelParticleHelper;
 import fr.dynamx.utils.DynamXUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -94,6 +95,14 @@ public class ImmersiveEventHandler {
         SeatsModule seats = vehicle.getModuleByType(SeatsModule.class);
         if (seats == null || seats.getControllingPassenger() != player) {
             return; // Only the driver applies run-over damage
+        }
+                WheelPropertiesModule wheelModule = vehicle.getModuleByType(WheelPropertiesModule.class);
+        if (wheelModule != null) {
+            String particle = WheelParticleHelper.getParticle(player);
+            if (!particle.equals(wheelModule.getSkidParticle())) {
+                wheelModule.setSkidParticle(particle);
+                vehicle.getSynchronizer().resyncEntity(player);
+            }
         }
 
         int speed = Math.round(DynamXUtils.getSpeed(vehicle));

@@ -20,6 +20,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.server.permission.PermissionAPI;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,6 +30,8 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 public class CommandCatch extends CommandBase {
+    public static final String PERMISSION = "immersiveaddon.command.catch";
+    
     private static final Map<UUID, Integer> selections = new HashMap<>();
 
     @Override
@@ -46,13 +49,21 @@ public class CommandCatch extends CommandBase {
         return "/catch";
     }
 
+        @Override
+    public int getRequiredPermissionLevel() {
+        return 0;
+    }
+
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (!(sender instanceof EntityPlayerMP)) {
             return;
         }
         EntityPlayerMP player = (EntityPlayerMP) sender;
-
+        if (!PermissionAPI.hasPermission(player, PERMISSION)) {
+            throw new CommandException("commands.generic.permission");
+        }
+        
         BaseVehicleEntity<?> vehicle = getLookedVehicle(player);
         if (vehicle != null) {
             Integer id = selections.remove(player.getUniqueID());
