@@ -11,6 +11,7 @@ import fr.dynamx.utils.physics.PhysicsRaycastResult;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,7 +21,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraftforge.server.permission.PermissionAPI;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,7 +46,7 @@ public class CommandCatch extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/catch";
+        return "/catch <player>";
     }
 
         @Override
@@ -56,14 +56,17 @@ public class CommandCatch extends CommandBase {
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        if (!(sender instanceof EntityPlayerMP)) {
-            return;
+        if (args.length != 1) {
+            throw new WrongUsageException(getUsage(sender));
         }
-        EntityPlayerMP player = (EntityPlayerMP) sender;
-        if (!PermissionAPI.hasPermission(player, PERMISSION)) {
-            throw new CommandException("commands.generic.permission");
+        if (sender instanceof EntityPlayerMP) {
+            throw new CommandException("Console only");
         }
-        
+        EntityPlayerMP player = server.getPlayerList().getPlayerByUsername(args[0]);
+        if (player == null) {
+            throw new CommandException("Player not found");
+        }
+
         BaseVehicleEntity<?> vehicle = getLookedVehicle(player);
         if (vehicle != null) {
             Integer id = selections.remove(player.getUniqueID());

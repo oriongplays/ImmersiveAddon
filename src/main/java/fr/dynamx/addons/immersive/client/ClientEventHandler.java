@@ -8,6 +8,8 @@ import fr.dynamx.addons.immersive.common.modules.VehicleCustomizationModule;
 import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
 import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleParts;
 import fr.dynamx.addons.immersive.common.items.ItemsRegister;
+import fr.dynamx.addons.immersive.client.KeyVehicleAssets;
+import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleAssets;
 import fr.dynamx.addons.immersive.client.KeyVehicleInventory;
 import fr.dynamx.addons.immersive.client.KeyRadio;
 import fr.dynamx.addons.immersive.client.KeyVehicleHealth;
@@ -83,6 +85,24 @@ public class ClientEventHandler {
                     ImmersiveAddonPacketHandler.getInstance().getNetwork()
                             .sendToServer(new PacketOpenVehicleParts(vehicle.getEntityId()));
                 }
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void handleAssetsInventoryKey(TickEvent.ClientTickEvent event) {
+        if(event.phase != TickEvent.Phase.END)
+            return;
+        if(mc.player != null && KeyVehicleAssets.OPEN_ASSETS != null && KeyVehicleAssets.OPEN_ASSETS.isPressed()) {
+            if (mc.playerController.getCurrentGameType() != GameType.ADVENTURE)
+                return;
+            if(mc.player.getRidingEntity() instanceof BaseVehicleEntity) {
+                BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) mc.player.getRidingEntity();
+                fr.dynamx.common.entities.modules.SeatsModule seats = vehicle.getModuleByType(fr.dynamx.common.entities.modules.SeatsModule.class);
+                if(seats != null && seats.getControllingPassenger() == mc.player) {
+                    ImmersiveAddonPacketHandler.getInstance().getNetwork()
+                            .sendToServer(new PacketOpenVehicleAssets(vehicle.getEntityId()));
                 }
             }
         }

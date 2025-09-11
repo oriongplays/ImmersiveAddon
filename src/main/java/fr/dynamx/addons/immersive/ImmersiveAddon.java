@@ -30,8 +30,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.server.permission.DefaultPermissionLevel;
-import net.minecraftforge.server.permission.PermissionAPI;
 
 @Mod(modid = ImmersiveAddon.ID, name = ImmersiveAddon.NAME, version = "1.0", dependencies = "before: dynamxmod")
 @DynamXAddon(modid = ImmersiveAddon.ID, name = ImmersiveAddon.NAME, version = "1.0")
@@ -90,8 +88,6 @@ public class ImmersiveAddon {
         ImmersiveAddonPacketHandler.getInstance().registerPackets();
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
 
-        PermissionAPI.registerNode(CommandAcessorioVIP.PERMISSION, DefaultPermissionLevel.NONE, "Allows use of /AcessorioVIP");
-        PermissionAPI.registerNode(CommandCatch.PERMISSION, DefaultPermissionLevel.OP, "Allows use of /catch");
 
         //network = NetworkRegistry.INSTANCE.newSimpleChannel(ImmersiveAddon.ID);
         //network.registerMessage(PacketAttachTrailer.Handler.class, PacketAttachTrailer.class, 0, Side.SERVER);

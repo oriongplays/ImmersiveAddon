@@ -33,12 +33,14 @@ import fr.dynamx.addons.immersive.common.modules.VehiclePropertiesModule;
 import fr.dynamx.addons.immersive.common.modules.EngineTuningModule;
 import fr.dynamx.addons.immersive.common.modules.VehicleCustomizationModule;
 import fr.dynamx.addons.immersive.common.modules.VehicleStorageModule;
+import fr.dynamx.addons.immersive.common.modules.VehicleAssetsModule;
 import fr.dynamx.addons.immersive.common.helpers.WheelParticleHelper;
 import fr.dynamx.utils.DynamXUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import fr.dynamx.addons.immersive.common.modules.WheelPropertiesModule;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
@@ -73,6 +75,7 @@ public class ImmersiveEventHandler {
         event.getModuleList().add(new EngineTuningModule(entity));
         event.getModuleList().add(new VehicleCustomizationModule(entity));
         event.getModuleList().add(new VehicleStorageModule(entity));
+        event.getModuleList().add(new VehicleAssetsModule(entity));
   }
   
 
@@ -96,12 +99,15 @@ public class ImmersiveEventHandler {
         if (seats == null || seats.getControllingPassenger() != player) {
             return; // Only the driver applies run-over damage
         }
-                WheelPropertiesModule wheelModule = vehicle.getModuleByType(WheelPropertiesModule.class);
+
+        WheelPropertiesModule wheelModule = vehicle.getModuleByType(WheelPropertiesModule.class);
         if (wheelModule != null) {
             String particle = WheelParticleHelper.getParticle(player);
             if (!particle.equals(wheelModule.getSkidParticle())) {
                 wheelModule.setSkidParticle(particle);
-                vehicle.getSynchronizer().resyncEntity(player);
+                if (player instanceof EntityPlayerMP) {
+                    vehicle.getSynchronizer().resyncEntity((EntityPlayerMP) player);
+                }
             }
         }
 
