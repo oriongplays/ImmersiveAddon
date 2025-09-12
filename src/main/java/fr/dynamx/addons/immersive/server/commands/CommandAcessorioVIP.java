@@ -33,6 +33,7 @@ public class CommandAcessorioVIP extends CommandBase {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length != 4 || !"Rodas".equalsIgnoreCase(args[1]) || !"skidparticle".equalsIgnoreCase(args[2])) {
+            throw new WrongUsageException(getUsage(sender));
         }
         if (sender instanceof EntityPlayerMP) {
             throw new CommandException("Console only");

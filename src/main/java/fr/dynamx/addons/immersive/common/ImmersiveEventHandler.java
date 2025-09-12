@@ -33,15 +33,14 @@ import fr.dynamx.addons.immersive.common.modules.VehiclePropertiesModule;
 import fr.dynamx.addons.immersive.common.modules.EngineTuningModule;
 import fr.dynamx.addons.immersive.common.modules.VehicleCustomizationModule;
 import fr.dynamx.addons.immersive.common.modules.VehicleStorageModule;
-import fr.dynamx.addons.immersive.common.modules.VehicleAssetsModule;
 import fr.dynamx.addons.immersive.common.helpers.WheelParticleHelper;
 import fr.dynamx.utils.DynamXUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import fr.dynamx.addons.immersive.common.modules.WheelPropertiesModule;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.DamageSource;
@@ -75,7 +74,6 @@ public class ImmersiveEventHandler {
         event.getModuleList().add(new EngineTuningModule(entity));
         event.getModuleList().add(new VehicleCustomizationModule(entity));
         event.getModuleList().add(new VehicleStorageModule(entity));
-        event.getModuleList().add(new VehicleAssetsModule(entity));
   }
   
 

@@ -31,7 +31,6 @@ public class ItemsRegister{
     public static ItemVehiclePart ACCESSORY;
     public static ItemVehiclePart SOUND;
     public static ItemVehiclePart NEON;
-    public static ItemAsset ASSET;
     public static Item SCANNER;
     public static Item VEHICLE_TRACKER;
     public static Item LOCKPICK;
@@ -52,7 +51,6 @@ public class ItemsRegister{
         ACCESSORY = new ItemVehiclePart("accessory", "accessory");
         SOUND = new ItemVehiclePart("sound", "sound");
         NEON = new ItemVehiclePart("neon", "neon");
-        ASSET = new ItemAsset("asset");
         SCANNER = new ItemScanner("scanner");
         VEHICLE_TRACKER = new ItemVehicleTracker("vehicle_tracker");
         LOCKPICK = new ItemLockpick("lockpick");

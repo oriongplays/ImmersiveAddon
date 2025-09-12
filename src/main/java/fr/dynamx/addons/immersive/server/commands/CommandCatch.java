@@ -30,7 +30,6 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 public class CommandCatch extends CommandBase {
-    public static final String PERMISSION = "immersiveaddon.command.catch";
     
     private static final Map<UUID, Integer> selections = new HashMap<>();
 
@@ -66,7 +65,7 @@ public class CommandCatch extends CommandBase {
         if (player == null) {
             throw new CommandException("Player not found");
         }
-
+        
         BaseVehicleEntity<?> vehicle = getLookedVehicle(player);
         if (vehicle != null) {
             Integer id = selections.remove(player.getUniqueID());

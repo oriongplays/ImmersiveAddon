@@ -2,7 +2,6 @@ package fr.dynamx.addons.immersive.client;
 
 import fr.dynamx.addons.immersive.ImmersiveAddon;
 import fr.dynamx.addons.immersive.common.modules.VehicleCustomizationModule;
-import fr.dynamx.addons.immersive.common.modules.VehicleAssetsModule;
 import fr.dynamx.api.events.DynamXModelRenderEvent;
 import fr.dynamx.api.events.client.DynamXEntityRenderEvent;
 import fr.dynamx.common.entities.BaseVehicleEntity;
@@ -37,16 +36,11 @@ public class VehiclePartRenderHandler {
         if(!name.startsWith(prefix))
             return;
         VehicleCustomizationModule module = currentEntity.getModuleByType(VehicleCustomizationModule.class);
-        VehicleAssetsModule assets = currentEntity.getModuleByType(VehicleAssetsModule.class);
-        if(module == null && assets == null)
+        if(module == null)
             return;
         String slotInfo = name.substring(prefix.length());
         String baseSlot = slotInfo.contains("_") ? slotInfo.substring(0, slotInfo.indexOf('_')) : slotInfo;
-        String installed = "";
-        if(module != null)
-            installed = module.getPart(baseSlot);
-        if(installed.isEmpty() && assets != null)
-            installed = assets.getAsset(baseSlot);
+        String installed = module.getPart(baseSlot);
         if(installed.isEmpty() || !slotInfo.equals(installed)) {
             event.setCanceled(true);
         }
