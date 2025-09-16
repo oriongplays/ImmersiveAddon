@@ -14,18 +14,18 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
 
     private final BaseVehicleEntity<?> entity;
 
-    @SynchronizedEntityVariable(name = "front_bumper")
-    private final EntityVariable<String> frontBumper = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "front_bumper_original");
-    @SynchronizedEntityVariable(name = "rear_bumper")
-    private final EntityVariable<String> rearBumper = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "rear_bumper_original");
+    @SynchronizedEntityVariable(name = "frontbumper")
+    private final EntityVariable<String> frontBumper = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "frontbumper_original");
+    @SynchronizedEntityVariable(name = "rearbumper")
+    private final EntityVariable<String> rearBumper = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "rearbumper_original");
     @SynchronizedEntityVariable(name = "hood")
     private final EntityVariable<String> hood = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "hood_original");
     @SynchronizedEntityVariable(name = "spoiler")
     private final EntityVariable<String> spoiler = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "spoiler_original");
     @SynchronizedEntityVariable(name = "roof")
     private final EntityVariable<String> roof = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "roof_original");
-    @SynchronizedEntityVariable(name = "side_skirt")
-    private final EntityVariable<String> sideSkirt = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "side_skirt_original");
+    @SynchronizedEntityVariable(name = "sideskirt")
+    private final EntityVariable<String> sideSkirt = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "sideskirt_original");
     @SynchronizedEntityVariable(name = "accessory")
     private final EntityVariable<String> accessory = new EntityVariable<>(SynchronizationRules.PHYSICS_TO_SPECTATORS, "accessory_original");
     @SynchronizedEntityVariable(name = "sound")
@@ -39,10 +39,10 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
 
     public void setPart(String slot, String name) {
         switch (slot) {
-            case "front_bumper":
+            case "frontbumper":
                 frontBumper.set(name);
                 break;
-            case "rear_bumper":
+            case "rearbumper":
                 rearBumper.set(name);
                 break;
             case "hood":
@@ -54,7 +54,7 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
             case "roof":
                 roof.set(name);
                 break;
-            case "side_skirt":
+            case "sideskirt":
                 sideSkirt.set(name);
                 break;
             case "accessory":
@@ -71,9 +71,9 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
 
     public String getPart(String slot) {
         switch (slot) {
-            case "front_bumper":
+            case "frontbumper":
                 return frontBumper.get();
-            case "rear_bumper":
+            case "rearbumper":
                 return rearBumper.get();
             case "hood":
                 return hood.get();
@@ -81,7 +81,7 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
                 return spoiler.get();
             case "roof":
                 return roof.get();
-            case "side_skirt":
+            case "sideskirt":
                 return sideSkirt.get();
             case "accessory":
                 return accessory.get();
@@ -99,12 +99,12 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
 
     @Override
     public void writeToNBT(NBTTagCompound tag) {
-        tag.setString("front_bumper", frontBumper.get());
-        tag.setString("rear_bumper", rearBumper.get());
+        tag.setString("frontbumper", frontBumper.get());
+        tag.setString("rearbumper", rearBumper.get());
         tag.setString("hood", hood.get());
         tag.setString("spoiler", spoiler.get());
         tag.setString("roof", roof.get());
-        tag.setString("side_skirt", sideSkirt.get());
+        tag.setString("sideskirt", sideSkirt.get());
         tag.setString("accessory", accessory.get());
         tag.setString("sound", sound.get());
         tag.setString("neon", neon.get());
@@ -112,18 +112,18 @@ public class VehicleCustomizationModule implements IPhysicsModule<AbstractEntity
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        if(tag.hasKey("front_bumper"))
-            frontBumper.set(tag.getString("front_bumper"));
-        if(tag.hasKey("rear_bumper"))
-            rearBumper.set(tag.getString("rear_bumper"));
+        if(tag.hasKey("frontbumper"))
+            frontBumper.set(tag.getString("frontbumper"));
+        if(tag.hasKey("rearbumper"))
+            rearBumper.set(tag.getString("rearbumper"));
         if(tag.hasKey("hood"))
             hood.set(tag.getString("hood"));
         if(tag.hasKey("spoiler"))
             spoiler.set(tag.getString("spoiler"));
         if(tag.hasKey("roof"))
             roof.set(tag.getString("roof"));
-        if(tag.hasKey("side_skirt"))
-            sideSkirt.set(tag.getString("side_skirt"));
+        if(tag.hasKey("sideskirt"))
+            sideSkirt.set(tag.getString("sideskirt"));
         if(tag.hasKey("accessory"))
             accessory.set(tag.getString("accessory"));
         if(tag.hasKey("sound"))

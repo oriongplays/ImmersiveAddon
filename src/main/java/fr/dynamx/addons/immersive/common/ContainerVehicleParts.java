@@ -61,12 +61,12 @@ public class ContainerVehicleParts extends Container {
 
     private static String getSlotName(int id) {
         switch (id) {
-            case 0: return "front_bumper";
-            case 1: return "rear_bumper";
+            case 0: return "frontbumper";
+            case 1: return "rearbumper";
             case 2: return "hood";
             case 3: return "spoiler";
             case 4: return "roof";
-            case 5: return "side_skirt";
+            case 5: return "sideskirt";
             case 6: return "accessory";
             case 7: return "sound";
             case 8: return "neon";

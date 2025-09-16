@@ -43,12 +43,12 @@ public class ItemsRegister{
         REPAIRKIT = new ItemRepairKit("repairkit");
         REPAIRWHEEL = new ItemRepairWheel("repairwheel");
         PRIMER = new ItemPrimer("primer");
-        FRONT_BUMPER = new ItemVehiclePart("front_bumper", "front_bumper");
-        REAR_BUMPER = new ItemVehiclePart("rear_bumper", "rear_bumper");
+        FRONT_BUMPER = new ItemVehiclePart("frontbumper", "frontbumper");
+        REAR_BUMPER = new ItemVehiclePart("rearbumper", "rearbumper");
         HOOD = new ItemVehiclePart("hood", "hood");
         SPOILER = new ItemVehiclePart("spoiler", "spoiler");
         ROOF = new ItemVehiclePart("roof", "roof");
-        SIDE_SKIRT = new ItemVehiclePart("side_skirt", "side_skirt");
+        SIDE_SKIRT = new ItemVehiclePart("sideskirt", "sideskirt");
         ACCESSORY = new ItemVehiclePart("accessory", "accessory");
         SOUND = new ItemVehiclePart("sound", "sound");
         NEON = new ItemVehiclePart("neon", "neon");
