@@ -7,8 +7,10 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import fr.dynamx.addons.immersive.common.modules.VehicleCustomizationModule;
 import fr.dynamx.addons.immersive.common.network.ImmersiveAddonPacketHandler;
 import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleParts;
+import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleAssets;
 import fr.dynamx.addons.immersive.common.items.ItemsRegister;
 import fr.dynamx.addons.immersive.client.KeyVehicleInventory;
+import fr.dynamx.addons.immersive.client.KeyVehicleAssets;
 import fr.dynamx.addons.immersive.client.KeyRadio;
 import fr.dynamx.addons.immersive.client.KeyVehicleHealth;
 import fr.dynamx.addons.immersive.client.KeyWheelHealth;
@@ -45,6 +47,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.world.GameType;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.TextComponentString;
 
 import java.util.concurrent.TimeUnit;
 
@@ -84,6 +87,25 @@ public class ClientEventHandler {
                             .sendToServer(new PacketOpenVehicleParts(vehicle.getEntityId()));
                 }
                 }
+            }
+        }
+    }
+
+        @SubscribeEvent
+    public void handleAssetsInventoryKey(TickEvent.ClientTickEvent event) {
+        if(event.phase != TickEvent.Phase.END)
+            return;
+        if(mc.player != null && KeyVehicleAssets.OPEN_ASSETS != null && KeyVehicleAssets.OPEN_ASSETS.isPressed()) {
+                        if(mc.playerController.getCurrentGameType() != GameType.ADVENTURE) {
+               // mc.player.sendStatusMessage(new TextComponentString("Assets require Adventure mode"), true);
+                return;
+            }
+            if(mc.player.getRidingEntity() instanceof BaseVehicleEntity) {
+                BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) mc.player.getRidingEntity();
+                if(ImmersiveAddonConfig.debug) {
+                    ImmersiveAddon.LOGGER.info("Requesting vehicle assets GUI for {}", vehicle.getEntityId());
+                }
+                ImmersiveAddonPacketHandler.getInstance().getNetwork().sendToServer(new PacketOpenVehicleAssets(vehicle.getEntityId()));
             }
         }
     }

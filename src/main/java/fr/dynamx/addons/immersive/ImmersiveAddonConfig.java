@@ -28,6 +28,7 @@ public class ImmersiveAddonConfig {
     public static int keyOpenRadio;
     public static int keyShowHealth;
     public static int keyShowWheelHealth;
+    public static int keyOpenAssets;
     public static boolean debug;
     public static List<String> denylist;
     public static List<String> collisionDenylist;
@@ -48,6 +49,7 @@ public class ImmersiveAddonConfig {
         attackDamage = configuration.getInt("AttackDamage", "CarConfig", 10, 1, 100, "Damage applied to vehicles when hit by projectiles.");
         meleeDamage = configuration.getInt("MeleeDamage", "CarConfig", 1, 1, 100, "Damage applied when the vehicle is hit by melee attacks.");
         keyOpenParts = configuration.getInt("OpenPartsKey", "ClientGeneral", 67, 1, 255, "Key code to open vehicle customization inventory.");
+        keyOpenAssets = configuration.getInt("OpenAssetsKey", "ClientGeneral", 79, 1, 255, "Key code to open vehicle assets inventory.");
         keyOpenRadio = configuration.getInt("OpenRadioKey", "ClientGeneral", 76, 1, 255, "Key code to open the radio GUI.");
         keyShowHealth = configuration.getInt("ShowHealthKey", "ClientGeneral", 72, 1, 255, "Key code to display vehicle health.");
         keyShowWheelHealth = configuration.getInt("ShowWheelHealthKey", "ClientGeneral", 73, 1, 255, "Key code to display wheel health.");
