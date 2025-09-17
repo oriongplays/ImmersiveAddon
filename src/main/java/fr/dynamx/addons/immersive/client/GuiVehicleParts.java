@@ -18,7 +18,7 @@ public class GuiVehicleParts extends GuiContainer {
         super(new ContainerVehicleParts(playerInv, entity, module));
         this.playerInv = playerInv;
         xSize = 176;
-        ySize = 166;
+        ySize = 132;
     }
 
     @Override

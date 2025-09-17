@@ -16,6 +16,7 @@ import fr.dynamx.api.network.EnumPacketTarget;
 import fr.dynamx.api.physics.BulletShapeType;
 import fr.dynamx.api.physics.EnumBulletShapeType;
 import fr.dynamx.common.entities.BaseVehicleEntity;
+import fr.dynamx.common.entities.modules.SeatsModule;
 import fr.dynamx.utils.DynamXUtils;
 import fr.dynamx.utils.physics.PhysicsRaycastResult;
 import net.minecraft.command.CommandBase;
@@ -211,16 +212,7 @@ public class CommandImmersiveAddon extends CommandBase {
     }
 
     private void handleSetPeso(EntityPlayerMP player, String type, ICommandSender sender) throws CommandException {
-        Predicate<EnumBulletShapeType> pred = p -> !p.isPlayer();
-        PhysicsRaycastResult result = DynamXUtils.castRayFromEntity(player, 5f, pred);
-        if(result == null) {
-            throw new CommandException("No vehicle in sight");
-        }
-        BulletShapeType<?> shape = (BulletShapeType<?>) result.hitBody.getUserObject();
-        if(!shape.getType().isBulletEntity() || !(shape.getObjectIn() instanceof BaseVehicleEntity)) {
-            throw new CommandException("No vehicle in sight");
-        }
-        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) shape.getObjectIn();
+        BaseVehicleEntity<?> vehicle = getDrivenVehicle(player);
         VehiclePropertiesModule module = vehicle.getModuleByType(VehiclePropertiesModule.class);
         if(module == null) {
             throw new CommandException("Vehicle cannot be updated");
@@ -232,16 +224,7 @@ public class CommandImmersiveAddon extends CommandBase {
     }
 
     private void handleVehicleEngine(EntityPlayerMP player, int level, ICommandSender sender) throws CommandException {
-        Predicate<EnumBulletShapeType> pred = p -> !p.isPlayer();
-        PhysicsRaycastResult result = DynamXUtils.castRayFromEntity(player, 5f, pred);
-        if(result == null) {
-            throw new CommandException("No vehicle in sight");
-        }
-        BulletShapeType<?> shape = (BulletShapeType<?>) result.hitBody.getUserObject();
-        if(!shape.getType().isBulletEntity() || !(shape.getObjectIn() instanceof BaseVehicleEntity)) {
-            throw new CommandException("No vehicle in sight");
-        }
-        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) shape.getObjectIn();
+        BaseVehicleEntity<?> vehicle = getDrivenVehicle(player);
         EngineTuningModule module = vehicle.getModuleByType(EngineTuningModule.class);
         if(module == null) {
             throw new CommandException("Vehicle cannot be tuned");
@@ -251,7 +234,7 @@ public class CommandImmersiveAddon extends CommandBase {
         player.sendMessage(new TextComponentTranslation("chat.dynamx_immersive.engine_level_set", level));
     }
     private void handleWheelModel(EntityPlayerMP player, String model, ICommandSender sender) throws CommandException {
-        BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
+        BaseVehicleEntity<?> vehicle = getDrivenVehicle(player);
         WheelPropertiesModule module = vehicle.getModuleByType(WheelPropertiesModule.class);
         if(module == null) {
             throw new CommandException("Vehicle cannot be updated");
@@ -263,7 +246,7 @@ public class CommandImmersiveAddon extends CommandBase {
     }
 
     private void handleWheelFriction(EntityPlayerMP player, float value, ICommandSender sender) throws CommandException {
-        BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
+        BaseVehicleEntity<?> vehicle = getDrivenVehicle(player);
         WheelPropertiesModule module = vehicle.getModuleByType(WheelPropertiesModule.class);
         if(module == null) {
             throw new CommandException("Vehicle cannot be updated");
@@ -274,7 +257,7 @@ public class CommandImmersiveAddon extends CommandBase {
     }
 
     private void handleWheelRestLength(EntityPlayerMP player, float value, ICommandSender sender) throws CommandException {
-        BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
+        BaseVehicleEntity<?> vehicle = getDrivenVehicle(player);
         WheelPropertiesModule module = vehicle.getModuleByType(WheelPropertiesModule.class);
         if(module == null) {
             throw new CommandException("Vehicle cannot be updated");
@@ -285,7 +268,7 @@ public class CommandImmersiveAddon extends CommandBase {
     }
 
     private void handleWheelStiffness(EntityPlayerMP player, float value, ICommandSender sender) throws CommandException {
-        BaseVehicleEntity<?> vehicle = getTargetVehicle(player);
+        BaseVehicleEntity<?> vehicle = getDrivenVehicle(player);
         WheelPropertiesModule module = vehicle.getModuleByType(WheelPropertiesModule.class);
         if(module == null) {
             throw new CommandException("Vehicle cannot be updated");
@@ -296,17 +279,16 @@ public class CommandImmersiveAddon extends CommandBase {
     }
 
 
-    private BaseVehicleEntity<?> getTargetVehicle(EntityPlayerMP player) throws CommandException {
-        Predicate<EnumBulletShapeType> pred = p -> !p.isPlayer();
-        PhysicsRaycastResult result = DynamXUtils.castRayFromEntity(player, 5f, pred);
-        if(result == null) {
-            throw new CommandException("No vehicle in sight");
+    private BaseVehicleEntity<?> getDrivenVehicle(EntityPlayerMP player) throws CommandException {
+        if(!(player.getRidingEntity() instanceof BaseVehicleEntity)) {
+            throw new CommandException("Player must be driving a vehicle");
         }
-        BulletShapeType<?> shape = (BulletShapeType<?>) result.hitBody.getUserObject();
-        if(!shape.getType().isBulletEntity() || !(shape.getObjectIn() instanceof BaseVehicleEntity)) {
-            throw new CommandException("No vehicle in sight");
+        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) player.getRidingEntity();
+        SeatsModule seats = vehicle.getModuleByType(SeatsModule.class);
+        if(seats == null || seats.getControllingPassenger() != player) {
+            throw new CommandException("Player must be the driver of the vehicle");
         }
-        return (BaseVehicleEntity<?>) shape.getObjectIn();
+        return vehicle;
     }
 
     private float parseFloat(String value) throws CommandException {
