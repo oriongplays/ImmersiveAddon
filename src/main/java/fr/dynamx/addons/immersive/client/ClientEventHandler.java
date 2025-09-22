@@ -14,11 +14,14 @@ import fr.dynamx.addons.immersive.client.KeyVehicleAssets;
 import fr.dynamx.addons.immersive.client.KeyRadio;
 import fr.dynamx.addons.immersive.client.KeyVehicleHealth;
 import fr.dynamx.addons.immersive.client.KeyWheelHealth;
+import fr.dynamx.addons.immersive.client.KeyVehicleLock;
 import fr.dynamx.addons.immersive.client.GuiRadio;
 import fr.dynamx.addons.immersive.common.modules.DamageModule;
 import fr.dynamx.addons.immersive.common.modules.RadioModule;
 import fr.dynamx.addons.immersive.client.VehicleDynamicLight;
 import fr.dynamx.addons.basics.common.modules.BasicsAddonModule;
+import fr.dynamx.addons.immersive.common.network.packets.PacketToggleVehicleLock;
+import fr.dynamx.addons.immersive.utils.VehicleLockUtils;
 import atomicstryker.dynamiclights.client.DynamicLights;
 import net.minecraftforge.fml.common.Loader;
 import java.util.HashMap;
@@ -48,6 +51,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.world.GameType;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 
 import java.util.concurrent.TimeUnit;
 
@@ -126,6 +131,39 @@ public class ClientEventHandler {
                 }
             }
         }
+    }
+    
+    @SubscribeEvent
+    public void handleVehicleLockKey(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+        if (mc.player == null || KeyVehicleLock.TOGGLE_LOCK == null || !KeyVehicleLock.TOGGLE_LOCK.isPressed()) {
+            return;
+        }
+        if (!(mc.player.getRidingEntity() instanceof BaseVehicleEntity)) {
+            return;
+        }
+
+        BaseVehicleEntity<?> vehicle = (BaseVehicleEntity<?>) mc.player.getRidingEntity();
+        fr.dynamx.common.entities.modules.SeatsModule seats = vehicle.getModuleByType(fr.dynamx.common.entities.modules.SeatsModule.class);
+        if (seats == null || seats.getControllingPassenger() != mc.player) {
+            return;
+        }
+
+        BasicsAddonModule module = vehicle.getModuleByType(BasicsAddonModule.class);
+        if (module == null) {
+            return;
+        }
+
+        if (module.hasLinkedKey() && !VehicleLockUtils.hasLinkedKey(mc.player, vehicle)) {
+            TextComponentTranslation msg = new TextComponentTranslation("basadd.key.invalid");
+            msg.getStyle().setColor(TextFormatting.DARK_RED);
+            mc.player.sendStatusMessage(msg, true);
+            return;
+        }
+
+        ImmersiveAddonPacketHandler.getInstance().getNetwork().sendToServer(new PacketToggleVehicleLock(vehicle.getEntityId()));
     }
     @SubscribeEvent
     public void handleHealthKey(TickEvent.ClientTickEvent event) {

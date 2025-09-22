@@ -5,6 +5,7 @@ import fr.dynamx.addons.immersive.client.KeyVehicleInventory;
 import fr.dynamx.addons.immersive.client.KeyVehicleAssets;
 import fr.dynamx.addons.immersive.client.KeyRadio;
 import fr.dynamx.addons.immersive.client.KeyVehicleHealth;
+import fr.dynamx.addons.immersive.client.KeyVehicleLock;
 import fr.dynamx.addons.immersive.client.KeyWheelHealth;
 import fr.dynamx.addons.immersive.client.VehiclePartRenderHandler;
 import net.minecraftforge.common.MinecraftForge;
@@ -20,5 +21,6 @@ public class ClientProxy extends CommonProxy {
         KeyRadio.register();
         KeyVehicleHealth.register();
         KeyWheelHealth.register();
+        KeyVehicleLock.register();
     }
 }

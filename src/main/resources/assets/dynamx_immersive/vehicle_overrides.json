@@ -1,0 +1,10 @@
+{
+  "altapack-orion.vehicle_orus_q3_suv": {
+    "Weight": 1.0,
+    "Engine": {
+      "Power": 2.0,
+      "MaxRPM": 1.0,
+      "Braking": 1.0
+    }
+  }
+}

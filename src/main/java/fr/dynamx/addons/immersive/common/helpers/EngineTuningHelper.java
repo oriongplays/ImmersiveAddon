@@ -77,7 +77,8 @@ public class EngineTuningHelper {
     }
 
     /**
-     * Applies tuning values to the given engine.
+     * Applies tuning values to the given engine on the logical server using the
+     * authoritative configuration files.
      */
     public static void applyTuning(Engine engine, CarEngineModule module, int level, float power, float maxRPM, float braking) {
         if (module == null || module.getPhysicsHandler() == null)
@@ -144,6 +145,54 @@ public class EngineTuningHelper {
             if (handler != null) {
                 handler.setEngine(engine);
             }
+        }
+    }
+    
+    /**
+     * Applies values received from the server without consulting local JSON
+     * files. This keeps client simulations aligned with the authoritative
+     * configuration while preventing tampering via resource overrides.
+     */
+    public static void applySyncedValues(Engine engine, CarEngineModule module, float power, float maxRPM, float braking) {
+        if (module == null || module.getPhysicsHandler() == null) {
+            return;
+        }
+
+        EnginePhysicsHandler handler = module.getPhysicsHandler();
+        if (engine == null && handler != null) {
+            engine = handler.getEngine();
+        }
+
+        if (engine != null) {
+            if (power > 0) {
+                engine.setPower(power);
+            }
+            if (maxRPM > 0) {
+                engine.setMaxRevs(maxRPM);
+            }
+            if (braking > 0) {
+                engine.setBraking(braking);
+            }
+        }
+
+        CarEngineInfo info = module.getEngineInfo();
+        if (info != null) {
+            try {
+                java.lang.reflect.Field f = BaseEngineInfo.class.getDeclaredField("power");
+                f.setAccessible(true);
+                f.setFloat(info, power);
+                f = BaseEngineInfo.class.getDeclaredField("maxRevs");
+                f.setAccessible(true);
+                f.setFloat(info, maxRPM);
+                f = BaseEngineInfo.class.getDeclaredField("braking");
+                f.setAccessible(true);
+                f.setFloat(info, braking);
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (engine != null && handler != null) {
+            handler.setEngine(engine);
         }
     }
     

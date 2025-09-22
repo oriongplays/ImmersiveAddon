@@ -5,6 +5,7 @@ import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleParts;
 import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleStorage;
 import fr.dynamx.addons.immersive.common.network.packets.PacketOpenVehicleAssets;
 import fr.dynamx.addons.immersive.common.network.packets.PacketVehicleAssetsResponse;
+import fr.dynamx.addons.immersive.common.network.packets.PacketToggleVehicleLock;
 import fr.dynamx.addons.immersive.common.network.packets.PacketShowNames;
 import fr.dynamx.addons.immersive.common.network.packets.SendRadioFreqConfig;
 import fr.dynamx.addons.immersive.common.network.packets.PacketUpdateRadioState;
@@ -37,6 +38,7 @@ public class ImmersiveAddonPacketHandler {
         this.registerPacket(PacketOpenVehicleAssets.Handler.class, PacketOpenVehicleAssets.class, Side.SERVER);
         this.registerPacket(PacketUpdateRadioState.Handler.class, PacketUpdateRadioState.class, Side.SERVER);
         this.registerPacket(PacketVehicleAssetsResponse.Handler.class, PacketVehicleAssetsResponse.class, Side.CLIENT);
+        this.registerPacket(PacketToggleVehicleLock.Handler.class, PacketToggleVehicleLock.class, Side.SERVER);
     }
     private <REQ extends IMessage, REPLY extends IMessage> void registerPacket(Class<? extends IMessageHandler<REQ, REPLY>> messageHandler, Class<REQ> requestMessageType, Side side) {
         network.registerMessage(messageHandler, requestMessageType, nextID, side);

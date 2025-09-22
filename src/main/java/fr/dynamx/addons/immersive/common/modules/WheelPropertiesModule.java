@@ -30,27 +30,25 @@ public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysi
 
     @SynchronizedEntityVariable(name = "wheelFriction")
     private final EntityVariable<Float> friction = new EntityVariable<>((v, val) -> apply(),
-            SynchronizationRules.PHYSICS_TO_SPECTATORS,
-            WheelTuningHelper.clampFriction(1.5f));
+            SynchronizationRules.PHYSICS_TO_SPECTATORS, 1.5f);
 
     @SynchronizedEntityVariable(name = "wheelBrake")
     private final EntityVariable<Float> brakeForce = new EntityVariable<>((v, val) -> apply(),
-            SynchronizationRules.PHYSICS_TO_SPECTATORS,
-            WheelTuningHelper.clampBrake(200f));
+            SynchronizationRules.PHYSICS_TO_SPECTATORS, 200f);
 
     @SynchronizedEntityVariable(name = "wheelRest")
     private final EntityVariable<Float> restLength = new EntityVariable<>((v, val) -> apply(),
-            SynchronizationRules.PHYSICS_TO_SPECTATORS,
-            WheelTuningHelper.clampRest(0.22f));
+            SynchronizationRules.PHYSICS_TO_SPECTATORS, 0.22f);
 
     @SynchronizedEntityVariable(name = "wheelStiff")
     private final EntityVariable<Float> stiffness = new EntityVariable<>((v, val) -> apply(),
-            SynchronizationRules.PHYSICS_TO_SPECTATORS,
-            WheelTuningHelper.clampStiff(30f));
+            SynchronizationRules.PHYSICS_TO_SPECTATORS, 30f);
 
     @SynchronizedEntityVariable(name = "wheelParticle")
     private final EntityVariable<String> skidParticle = new EntityVariable<>((v, val) -> apply(),
             SynchronizationRules.PHYSICS_TO_SPECTATORS, "spit");
+
+    private boolean updating;
 
     public WheelPropertiesModule(BaseVehicleEntity<?> entity) {
         this.entity = entity;
@@ -62,30 +60,40 @@ public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysi
     }
 
     public void setFriction(float f) {
-        this.friction.set(WheelTuningHelper.clampFriction(f));
-        apply();
+        if (entity.world != null && entity.world.isRemote) {
+            return;
+        }
+        setSynced(friction, WheelTuningHelper.clampFriction(f));
     }
 
     public void setBrakeForce(float b) {
-        this.brakeForce.set(WheelTuningHelper.clampBrake(b));
-        apply();
+        if (entity.world != null && entity.world.isRemote) {
+            return;
+        }
+        setSynced(brakeForce, WheelTuningHelper.clampBrake(b));
     }
 
     public void setRestLength(float l) {
-        this.restLength.set(WheelTuningHelper.clampRest(l));
-        apply();
+        if (entity.world != null && entity.world.isRemote) {
+            return;
+        }
+        setSynced(restLength, WheelTuningHelper.clampRest(l));
     }
 
     public void setStiffness(float s) {
-        this.stiffness.set(WheelTuningHelper.clampStiff(s));
-        apply();
+        if (entity.world != null && entity.world.isRemote) {
+            return;
+        }
+        setSynced(stiffness, WheelTuningHelper.clampStiff(s));
     }
 
     public void setSkidParticle(String p) {
-        if (WheelTuningHelper.isValidParticle(p)) {
-            this.skidParticle.set(p);
+        if (entity.world != null && entity.world.isRemote) {
+            return;
         }
-        apply();
+        if (WheelTuningHelper.isValidParticle(p)) {
+            setSynced(skidParticle, p);
+        }
     }
 
         public String getSkidParticle() {
@@ -120,6 +128,19 @@ public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysi
     }
 
     private void apply() {
+        if (updating) {
+            return;
+        }
+        if (entity.world != null && !entity.world.isRemote) {
+            setSynced(friction, WheelTuningHelper.clampFriction(friction.get()));
+            setSynced(brakeForce, WheelTuningHelper.clampBrake(brakeForce.get()));
+            setSynced(restLength, WheelTuningHelper.clampRest(restLength.get()));
+            setSynced(stiffness, WheelTuningHelper.clampStiff(stiffness.get()));
+            String particle = skidParticle.get();
+            if (!WheelTuningHelper.isValidParticle(particle)) {
+                setSynced(skidParticle, "spit");
+            }
+        }
         WheelsModule wheelModule = entity.getModuleByType(WheelsModule.class);
         if (wheelModule == null)
             return;
@@ -164,16 +185,48 @@ public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysi
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
+        updating = true;
         model.set(tag.getString("wheelModel"));
-        friction.set(WheelTuningHelper.clampFriction(tag.getFloat("wheelFriction")));
-        brakeForce.set(WheelTuningHelper.clampBrake(tag.getFloat("wheelBrake")));
-        restLength.set(WheelTuningHelper.clampRest(tag.getFloat("wheelRest")));
-        stiffness.set(WheelTuningHelper.clampStiff(tag.getFloat("wheelStiff")));
+        friction.set(tag.getFloat("wheelFriction"));
+        brakeForce.set(tag.getFloat("wheelBrake"));
+        restLength.set(tag.getFloat("wheelRest"));
+        stiffness.set(tag.getFloat("wheelStiff"));
         if (tag.hasKey("wheelParticle")) {
-            String p = tag.getString("wheelParticle");
-            if (WheelTuningHelper.isValidParticle(p))
-                skidParticle.set(p);
+            skidParticle.set(tag.getString("wheelParticle"));
+        }
+        updating = false;
+        if (entity.world != null && !entity.world.isRemote) {
+            setSynced(friction, WheelTuningHelper.clampFriction(friction.get()));
+            setSynced(brakeForce, WheelTuningHelper.clampBrake(brakeForce.get()));
+            setSynced(restLength, WheelTuningHelper.clampRest(restLength.get()));
+            setSynced(stiffness, WheelTuningHelper.clampStiff(stiffness.get()));
+            if (!WheelTuningHelper.isValidParticle(skidParticle.get())) {
+                setSynced(skidParticle, "spit");
+            }
         }
         apply();
+    }
+    
+    private void setSynced(EntityVariable<Float> variable, float value) {
+        Float current = variable.get();
+        if (current != null && Math.abs(current - value) < 1.0e-4f) {
+            return;
+        }
+        updating = true;
+        variable.set(value);
+        updating = false;
+    }
+
+    private void setSynced(EntityVariable<String> variable, String value) {
+        if (value == null) {
+            value = "";
+        }
+        String current = variable.get();
+        if (value.equals(current != null ? current : "")) {
+            return;
+        }
+        updating = true;
+        variable.set(value);
+        updating = false;
     }
 }

@@ -9,6 +9,7 @@ package fr.dynamx.addons.immersive.common.modules;
 import fr.dynamx.addons.immersive.ImmersiveAddon;
 import fr.dynamx.addons.immersive.common.helpers.EngineTuningHelper;
 import fr.dynamx.addons.immersive.common.helpers.EngineTuningHelper.EngineLevelConfig;
+import fr.dynamx.addons.immersive.common.helpers.VehicleOverrideHelper;
 import fr.dynamx.addons.immersive.ImmersiveAddonConfig;
 import fr.dynamx.api.entities.modules.IPhysicsModule;
 import fr.dynamx.api.network.sync.EntityVariable;
@@ -42,18 +43,21 @@ public class EngineTuningModule implements IPhysicsModule<AbstractEntityPhysicsH
             SynchronizationRules.PHYSICS_TO_SPECTATORS, -1f);
 
     private EngineLevelConfig defaults = new EngineLevelConfig();
+    private boolean updating;
 
     public EngineTuningModule(BaseVehicleEntity<?> entity) {
         this.entity = entity;
     }
 
     public void setTuningLevel(int lvl) {
+        updating = true;
         this.tuningLevel.set(lvl);
+        updating = false;
         if (entity.world != null && !entity.world.isRemote) {
             EngineLevelConfig cfg = EngineTuningHelper.loadLevel(lvl);
-            if (cfg.power > 0) power.set(cfg.power);
-            if (cfg.maxRPM > 0) maxRPM.set(cfg.maxRPM);
-            if (cfg.braking > 0) braking.set(cfg.braking);
+            if (cfg.power > 0) setSynced(power, cfg.power);
+            if (cfg.maxRPM > 0) setSynced(maxRPM, cfg.maxRPM);
+            if (cfg.braking > 0) setSynced(braking, cfg.braking);
         }
         apply();
     }
@@ -63,22 +67,55 @@ public class EngineTuningModule implements IPhysicsModule<AbstractEntityPhysicsH
     }
 
     private void apply() {
-        CarEngineModule engineModule = entity.getModuleByType(CarEngineModule.class);
-        if (engineModule == null)
+        if (updating) {
             return;
-        defaults = EngineTuningHelper.loadLevel(tuningLevel.get());
-        if (entity.world != null && !entity.world.isRemote) {
-            if (power.get() < 0 && defaults.power > 0) power.set(defaults.power);
-            if (maxRPM.get() < 0 && defaults.maxRPM > 0) maxRPM.set(defaults.maxRPM);
-            if (braking.get() < 0 && defaults.braking > 0) braking.set(defaults.braking);
-            ImmersiveAddon.LOGGER.info("Applying engine tuning for {}: level={}", entity.getName(), tuningLevel.get());
         }
-        float p = power.get() >= 0 ? power.get() : defaults.power;
-        float rpm = maxRPM.get() >= 0 ? maxRPM.get() : defaults.maxRPM;
-        float brk = braking.get() >= 0 ? braking.get() : defaults.braking;
+        CarEngineModule engineModule = entity.getModuleByType(CarEngineModule.class);
+        if (engineModule == null) {
+            return;
+        }
+        boolean server = entity.world != null && !entity.world.isRemote;
         Engine engine = engineModule.getPhysicsHandler() != null ?
                 engineModule.getPhysicsHandler().getEngine() : null;
-        EngineTuningHelper.applyTuning(engine, engineModule, tuningLevel.get(), p, rpm, brk);
+        if (server) {
+            defaults = EngineTuningHelper.loadLevel(tuningLevel.get());
+            if (power.get() < 0 && defaults.power > 0) {
+                setSynced(power, defaults.power);
+            }
+            if (maxRPM.get() < 0 && defaults.maxRPM > 0) {
+                setSynced(maxRPM, defaults.maxRPM);
+            }
+            if (braking.get() < 0 && defaults.braking > 0) {
+                setSynced(braking, defaults.braking);
+            }
+            float p = power.get();
+            float rpm = maxRPM.get();
+            float brk = braking.get();
+            VehicleOverrideHelper.VehicleOverride override = VehicleOverrideHelper.getOverride(entity);
+            if (p > 0) {
+                p *= override.getEnginePowerMultiplier();
+            }
+            if (rpm > 0) {
+                rpm *= override.getEngineMaxRPMMultiplier();
+            }
+            if (brk > 0) {
+                brk *= override.getEngineBrakingMultiplier();
+            }
+            setSynced(power, p);
+            setSynced(maxRPM, rpm);
+            setSynced(braking, brk);
+            EngineTuningHelper.applyTuning(engine, engineModule, tuningLevel.get(), p, rpm, brk);
+            ImmersiveAddon.LOGGER.info("Applying engine tuning for {}: level={} power={} maxRPM={} braking={}",
+                    entity.getName(), tuningLevel.get(), p, rpm, brk);
+        } else {
+            float p = power.get();
+            float rpm = maxRPM.get();
+            float brk = braking.get();
+            if (p < 0 || rpm < 0 || brk < 0) {
+                return;
+            }
+            EngineTuningHelper.applySyncedValues(engine, engineModule, p, rpm, brk);
+        }
         if (ImmersiveAddonConfig.debug && entity.hasModuleOfType(SeatsModule.class)) {
             Entity rider = entity.getModuleByType(SeatsModule.class).getControllingPassenger();
             if (rider instanceof EntityPlayer) {
@@ -108,16 +145,54 @@ public class EngineTuningModule implements IPhysicsModule<AbstractEntityPhysicsH
     public void readFromNBT(NBTTagCompound tag) {
         int lvl = tag.getInteger("engineLevel");
         lvl = Math.max(1, Math.min(lvl, 5));
+        updating = true;
         tuningLevel.set(lvl);
-        power.set(tag.getFloat("enginePower"));
-        maxRPM.set(tag.getFloat("engineMaxRPM"));
-        braking.set(tag.getFloat("engineBraking"));
-        if (entity.world != null && !entity.world.isRemote) {
+        updating = false;
+        if (entity.world != null && entity.world.isRemote) {
+            power.set(tag.getFloat("enginePower"));
+            maxRPM.set(tag.getFloat("engineMaxRPM"));
+            braking.set(tag.getFloat("engineBraking"));
+        } else {
             defaults = EngineTuningHelper.loadLevel(tuningLevel.get());
-            if (power.get() < 0 && defaults.power > 0) power.set(defaults.power);
-            if (maxRPM.get() < 0 && defaults.maxRPM > 0) maxRPM.set(defaults.maxRPM);
-            if (braking.get() < 0 && defaults.braking > 0) braking.set(defaults.braking);
+            float storedPower = tag.getFloat("enginePower");
+            float storedMax = tag.getFloat("engineMaxRPM");
+            float storedBrk = tag.getFloat("engineBraking");
+            if (storedPower > 0) {
+                setSynced(power, storedPower);
+            } else if (defaults.power > 0) {
+                setSynced(power, defaults.power);
+            } else {
+                setSynced(power, -1f);
+            }
+            if (storedMax > 0) {
+                setSynced(maxRPM, storedMax);
+            } else if (defaults.maxRPM > 0) {
+                setSynced(maxRPM, defaults.maxRPM);
+            } else {
+                setSynced(maxRPM, -1f);
+            }
+            if (storedBrk > 0) {
+                setSynced(braking, storedBrk);
+            } else if (defaults.braking > 0) {
+                setSynced(braking, defaults.braking);
+            } else {
+                setSynced(braking, -1f);
+            }
         }
         apply();
+    }
+    
+    private void setSynced(EntityVariable<Float> variable, float value) {
+        if (Float.isNaN(value)) {
+            return;
+        }
+        Float currentObj = variable.get();
+        float current = currentObj != null ? currentObj : Float.NaN;
+        if (!Float.isNaN(current) && Math.abs(current - value) < 1.0e-4f) {
+            return;
+        }
+        updating = true;
+        variable.set(value);
+        updating = false;
     }
 }

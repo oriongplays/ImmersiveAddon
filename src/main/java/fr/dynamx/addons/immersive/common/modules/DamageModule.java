@@ -4,7 +4,9 @@ package fr.dynamx.addons.immersive.common.modules;
 import com.jme3.math.Vector3f;
 import fr.dynamx.addons.immersive.ImmersiveAddon;
 import fr.dynamx.addons.immersive.ImmersiveAddonConfig;
+import fr.dynamx.addons.immersive.client.controllers.VehicleHealthController;
 import fr.dynamx.api.entities.modules.IPhysicsModule;
+import fr.dynamx.api.entities.modules.IVehicleController;
 import fr.dynamx.api.network.sync.EntityVariable;
 import fr.dynamx.api.network.sync.SynchronizationRules;
 import fr.dynamx.api.network.sync.SynchronizedEntityVariable;
@@ -26,6 +28,7 @@ import net.minecraft.util.text.TextComponentString;
 public class DamageModule implements IPhysicsModule<AbstractEntityPhysicsHandler<?, ?>>, IPhysicsModule.IEntityUpdateListener {
 
     private final PackPhysicsEntity<?, ?> entity;
+    private VehicleHealthController healthController;
 
 
 
@@ -36,6 +39,9 @@ public class DamageModule implements IPhysicsModule<AbstractEntityPhysicsHandler
 
     public DamageModule(PackPhysicsEntity<?, ?> entity) {
         this.entity = entity;
+        if (entity.world != null && entity.world.isRemote) {
+            this.healthController = new VehicleHealthController(this);
+        }
     }
 
     public float getDamage() {
@@ -63,6 +69,11 @@ public class DamageModule implements IPhysicsModule<AbstractEntityPhysicsHandler
 
     public void setLastDamage(float lastDamage) {
         this.lastDamage.set(lastDamage);
+    }
+    
+    @Override
+    public IVehicleController createNewController() {
+        return healthController;
     }
 
     @Override

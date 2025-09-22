@@ -2,6 +2,7 @@ package fr.dynamx.addons.immersive.common.modules;
 
 import fr.dynamx.addons.immersive.ImmersiveAddon;
 import fr.dynamx.addons.immersive.common.helpers.VehicleLevelConfig;
+import fr.dynamx.addons.immersive.common.helpers.VehicleOverrideHelper;
 import fr.dynamx.api.entities.modules.IPhysicsModule;
 import fr.dynamx.api.network.sync.EntityVariable;
 import fr.dynamx.api.network.sync.SynchronizationRules;
@@ -38,48 +39,51 @@ public class VehiclePropertiesModule implements IPhysicsModule<AbstractEntityPhy
             SynchronizationRules.PHYSICS_TO_SPECTATORS, "medio");
 
     private VehicleLevelConfig defaults = new VehicleLevelConfig();
+    private boolean updating;
 
     public VehiclePropertiesModule(BaseVehicleEntity<?> entity) {
         this.entity = entity;
     }
 
     public void setWeightType(String newType) {
+        updating = true;
         this.type.set(newType);
-        // Load defaults from the server config when the type changes so clients
-        // cannot spoof their own values
-        if (entity.world != null && !entity.world.isRemote) {
-            VehicleLevelConfig cfg = VehicleLevelConfig.loadDefault(newType);
-            if (cfg.emptyMass > 0) {
-                this.mass.set(cfg.emptyMass);
-            }
-            if (cfg.dragCoefficient >= 0) {
-                this.drag.set(cfg.dragCoefficient);
-            }
-            if (!cfg.model.isEmpty()) {
-                this.model.set(cfg.model);
-            }
-        }
+        updating = false;
         apply();
     }
 
     private void apply() {
+        if (updating) {
+            return;
+        }
         if (!(entity.getPackInfo() instanceof ModularVehicleInfo)) {
             return;
         }
         ModularVehicleInfo info = (ModularVehicleInfo) entity.getPackInfo();
-        defaults = VehicleLevelConfig.loadDefault(type.get());
-        // On the server we fill missing values from the official config so
-        // clients cannot rely on their own JSON files
         if (entity.world != null && !entity.world.isRemote) {
-            if (mass.get() <= 0 && defaults.emptyMass > 0) {
-                mass.set(defaults.emptyMass);
+            defaults = VehicleLevelConfig.loadDefault(type.get());
+            int baseMass = mass.get();
+            float dragValue = drag.get();
+            String mdl = model.get();
+            if (defaults.emptyMass > 0) {
+                baseMass = defaults.emptyMass;
             }
-            if (drag.get() < 0 && defaults.dragCoefficient >= 0) {
-                drag.set(defaults.dragCoefficient);
+            if (defaults.dragCoefficient >= 0) {
+                dragValue = defaults.dragCoefficient;
             }
-            if (model.get().isEmpty() && !defaults.model.isEmpty()) {
-                model.set(defaults.model);
+            if (!defaults.model.isEmpty()) {
+                mdl = defaults.model;
             }
+                        VehicleOverrideHelper.VehicleOverride override = VehicleOverrideHelper.getOverride(entity);
+            if (baseMass > 0) {
+                float weightMultiplier = override.getWeightMultiplier();
+                if (weightMultiplier > 0) {
+                    baseMass = Math.round(baseMass * weightMultiplier);
+                }
+            }
+            setSynced(model, mdl);
+            setSynced(mass, baseMass);
+            setSynced(drag, dragValue);
         }
         ImmersiveAddon.LOGGER.info("Applying vehicle properties for {}: type={} mass={} drag={}",
                 entity.getName(), type.get(), mass.get(), drag.get());
@@ -88,9 +92,6 @@ public class VehiclePropertiesModule implements IPhysicsModule<AbstractEntityPhy
             info.setModel(new ResourceLocation(mdl));
         }
         int m = mass.get();
-        if (m <= 0) {
-            m = defaults.emptyMass;
-        }
         if (m > 0) {
             info.setEmptyMass(m);
             AbstractEntityPhysicsHandler<?, ?> handler = entity.getPhysicsHandler();
@@ -104,9 +105,6 @@ public class VehiclePropertiesModule implements IPhysicsModule<AbstractEntityPhy
             }
         }
         float d = drag.get();
-        if (d < 0) {
-            d = defaults.dragCoefficient;
-        }
         if (d >= 0) {
             info.setDragFactor(d);
         }
@@ -133,24 +131,72 @@ public class VehiclePropertiesModule implements IPhysicsModule<AbstractEntityPhy
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
+        updating = true;
         model.set(tag.getString("model"));
         mass.set(tag.getInteger("mass"));
         drag.set(tag.getFloat("drag"));
         if (tag.hasKey("PesoDeVeiculo")) {
             type.set(tag.getString("PesoDeVeiculo"));
         }
+                updating = false;
         if (entity.world != null && !entity.world.isRemote) {
             defaults = VehicleLevelConfig.loadDefault(type.get());
-            if (mass.get() <= 0 && defaults.emptyMass > 0) {
-                mass.set(defaults.emptyMass);
+            int baseMass = mass.get();
+            float dragValue = drag.get();
+            String mdl = model.get();
+            if (defaults.emptyMass > 0) {
+                baseMass = defaults.emptyMass;
             }
-            if (drag.get() < 0 && defaults.dragCoefficient >= 0) {
-                drag.set(defaults.dragCoefficient);
+            if (defaults.dragCoefficient >= 0) {
+                dragValue = defaults.dragCoefficient;
             }
-            if (model.get().isEmpty() && !defaults.model.isEmpty()) {
-                model.set(defaults.model);
+            if (!defaults.model.isEmpty()) {
+                mdl = defaults.model;
             }
+            VehicleOverrideHelper.VehicleOverride override = VehicleOverrideHelper.getOverride(entity);
+            if (baseMass > 0) {
+                float weightMultiplier = override.getWeightMultiplier();
+                if (weightMultiplier > 0) {
+                    baseMass = Math.round(baseMass * weightMultiplier);
+                }
+            }
+            setSynced(model, mdl);
+            setSynced(mass, baseMass);
+            setSynced(drag, dragValue);
         }
         apply();
+    }
+
+    private void setSynced(EntityVariable<String> variable, String value) {
+        if (value == null) {
+            value = "";
+        }
+        String current = variable.get();
+        if (value.equals(current != null ? current : "")) {
+            return;
+        }
+        updating = true;
+        variable.set(value);
+        updating = false;
+    }
+
+    private void setSynced(EntityVariable<Integer> variable, int value) {
+        Integer current = variable.get();
+        if (current != null && current == value) {
+            return;
+        }
+        updating = true;
+        variable.set(value);
+        updating = false;
+    }
+
+    private void setSynced(EntityVariable<Float> variable, float value) {
+        Float current = variable.get();
+        if (current != null && Math.abs(current - value) < 1.0e-4f) {
+            return;
+        }
+        updating = true;
+        variable.set(value);
+        updating = false;
     }
 }
