@@ -61,7 +61,7 @@ public class GuiRadio extends GuiScreen {
         if (ConfigReader.frequencies != null && !ConfigReader.frequencies.isEmpty()) {
             int idx = Math.min(Math.max(index, 0), ConfigReader.frequencies.size() - 1);
             RadioFrequency freq = ConfigReader.frequencies.get(idx);
-            String text = I18n.format("%s MHz - %s", freq.getFrequency(), freq.getName());
+            String text = I18n.format("gui.radio.frequency", freq.getFrequency(), freq.getName());
             drawCenteredString(this.fontRenderer, text, width / 2, height / 2 - 40, 0xFFFFFF);
         }
         super.drawScreen(mouseX, mouseY, partialTicks);

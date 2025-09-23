@@ -16,12 +16,15 @@ import fr.dynamx.addons.immersive.common.helpers.WheelTuningHelper;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SynchronizedEntityVariable.SynchronizedPhysicsModule(modid = ImmersiveAddon.ID)
-public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysicsHandler<?, ?>> {
+public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysicsHandler<?, ?>>, IPhysicsModule.IEntityUpdateListener {
     private final BaseVehicleEntity<?> entity;
 
     @SynchronizedEntityVariable(name = "wheelModel")
@@ -49,6 +52,10 @@ public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysi
             SynchronizationRules.PHYSICS_TO_SPECTATORS, "spit");
 
     private boolean updating;
+
+    private final Map<Integer, Float> dryFriction = new HashMap<>();
+    private final Map<Integer, Float> dryGrip = new HashMap<>();
+    private boolean rainSlipActive;
 
     public WheelPropertiesModule(BaseVehicleEntity<?> entity) {
         this.entity = entity;
@@ -163,6 +170,12 @@ public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysi
                         wheel.getSuspension().setRestLength(restLength.get());
                         wheel.getSuspension().setStiffness(stiffness.get());
                     }
+                    if (rainSlipActive) {
+                        dryFriction.put(i, friction.get());
+                    } else {
+                        dryFriction.put(i, wheel.getFriction());
+                        dryGrip.put(i, wheel.getGrip());
+                    }
                 }
             }
         }
@@ -173,6 +186,75 @@ public class WheelPropertiesModule implements IPhysicsModule<AbstractEntityPhysi
         apply();
     }
 
+        @Override
+    public void updateEntity() {
+        if (entity.world == null || entity.world.isRemote) {
+            return;
+        }
+        WheelsModule wheelModule = entity.getModuleByType(WheelsModule.class);
+        if (wheelModule == null) {
+            rainSlipActive = false;
+            return;
+        }
+        WheelsPhysicsHandler handler = wheelModule.getPhysicsHandler();
+        if (handler == null) {
+            rainSlipActive = false;
+            return;
+        }
+
+        boolean shouldSlip = isRainingOnVehicle();
+        if (!shouldSlip) {
+            for (int i = 0; i < handler.getNumWheels(); i++) {
+                WheelPhysics wheel = handler.getWheel(i);
+                if (wheel == null) {
+                    continue;
+                }
+                if (rainSlipActive) {
+                    float restoredFriction = dryFriction.getOrDefault(i, friction.get());
+                    wheel.setFriction(restoredFriction);
+                    Float baseGrip = dryGrip.get(i);
+                    if (baseGrip != null) {
+                        wheel.setGrip(baseGrip);
+                    }
+                }
+                dryFriction.put(i, wheel.getFriction());
+                dryGrip.put(i, wheel.getGrip());
+            }
+            rainSlipActive = false;
+            return;
+        }
+
+        for (int i = 0; i < handler.getNumWheels(); i++) {
+            WheelPhysics wheel = handler.getWheel(i);
+            if (wheel == null) {
+                continue;
+            }
+            dryFriction.putIfAbsent(i, wheel.getFriction());
+            dryGrip.putIfAbsent(i, wheel.getGrip());
+            float baseFriction = dryFriction.getOrDefault(i, friction.get());
+            float slipFriction = Math.max(0.6f, baseFriction * 0.55f);
+            if (Math.abs(wheel.getFriction() - slipFriction) > 1.0e-3f) {
+                wheel.setFriction(slipFriction);
+            }
+            Float baseGrip = dryGrip.get(i);
+            if (baseGrip != null) {
+                float slipGrip = Math.max(0.25f, baseGrip * 0.65f);
+                if (Math.abs(wheel.getGrip() - slipGrip) > 1.0e-3f) {
+                    wheel.setGrip(slipGrip);
+                }
+            }
+        }
+        rainSlipActive = true;
+    }
+
+    private boolean isRainingOnVehicle() {
+        if (!entity.world.isRaining()) {
+            return false;
+        }
+        BlockPos pos = new BlockPos(entity.posX, entity.posY + entity.height, entity.posZ);
+        return entity.world.isRainingAt(pos);
+    }
+    
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         tag.setString("wheelModel", model.get());

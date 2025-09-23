@@ -57,3 +57,5 @@ chat.dynamx_immersive.catch_success=§aEntidade adicionada ao veículo
 chat.dynamx_immersive.tracker_given=§aRastreador ajustado para %s
 tooltip.dynamx_immersive.vehicle_tracker.distance=Distância: %s blocos
 tooltip.dynamx_immersive.vehicle_tracker.no_target=Nenhum veículo rastreado
+key.open_radio=Abrir rádio
+gui.radio.frequency=%s MHz - %s
